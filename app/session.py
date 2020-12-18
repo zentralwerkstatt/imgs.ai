@@ -81,7 +81,7 @@ class Session:
             self.metrics.insert(0, self.metrics.pop(idx))
 
     def extend(self, files):
-        self.pos_idxs += models[self.model].extend(files)
+        self.pos_idxs += models[self.model].extend(files, Config.UPLOADS_PATH)
 
     def get_nns(self):
         # If we have queries, search nearest neighbors, else display random data points
