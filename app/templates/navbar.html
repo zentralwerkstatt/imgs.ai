@@ -9,12 +9,15 @@
 			{{ nav_link('pipeline', 'Training') }}
 		{% endif %}
 		{{ nav_link('help', 'Help') }}
-		{% if not current_user.is_anonymous and current_user.id==1 and Config.USER_MGMT %}
-			{{ nav_link('users', 'User Management') }}
-		{% elif current_user.is_anonymous and Config.USER_MGMT %}
-			{{ nav_link('login', 'Login') }}
-		{% elif Config.USER_MGMT %}
-			{{ nav_link('logout', 'Logout') }}
+		{% if Config.USER_MGMT %}
+			{% if not current_user.is_anonymous and current_user.id==1 %}
+				{{ nav_link('users', 'User Management') }}
+				{{ nav_link('logout', 'Logout') }}
+			{% elif current_user.is_anonymous %}
+				{{ nav_link('login', 'Login') }}
+			{% elif not current_user.is_anonymous %}
+				{{ nav_link('logout', 'Logout') }}
+			{% endif %} 
 		{% endif %}
 	</ul>
 </nav>
