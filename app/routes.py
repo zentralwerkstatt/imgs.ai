@@ -117,7 +117,7 @@ def interface():
 
     # Uploads
     if request.files:
-        session.extend(request.files.getlist("file"))
+        session.extend(request.files.getlist("file"), Config.UPLOADS_PATH)
 
     # Settings
     if "n" in request.form:

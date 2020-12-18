@@ -5,7 +5,6 @@ import os
 import pickle
 import json
 from annoy import AnnoyIndex
-from config import Config
 import h5py
 import csv
 
@@ -55,12 +54,12 @@ class EmbeddingModel:
                         if col:
                             self.metadata[str(idx)].append(col)
 
-    def extend(self, files):
+    def extend(self, files, uploads_path):
         # Load uploads file
         uploads_file = os.path.join(self.model_folder, "uploads.hdf5")
         uploads = h5py.File(uploads_file, "a")  # Read/write/create
 
-        paths, idxs = upload_imgs_to(files, Config.UPLOADS_PATH)
+        paths, idxs = upload_imgs_to(files, uploads_path)
         embs = self.transform(paths)
 
         for i, idx in enumerate(idxs):
