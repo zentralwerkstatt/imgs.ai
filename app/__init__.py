@@ -7,21 +7,9 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_cors import CORS
 from flask_bootstrap import Bootstrap
-from config import Config
 from model import EmbeddingModel
 from datetime import date
-
-
-# Start app
-app = Flask(__name__)
-app.config.from_object(Config)
-
-# Plugins
-Bootstrap(app)  # Bootstrap
-CORS(app)  # CORS
-login_manager = LoginManager(app)  # Login
-login_manager.login_view = "login"
-login_manager.login_message_category = "warning"
+import importlib
 
 # Logging
 logging.captureWarnings(True)
@@ -34,6 +22,23 @@ file_handler.setFormatter(formatter)
 console_handler.setFormatter(formatter)
 log.addHandler(file_handler)
 log.addHandler(console_handler)
+
+config_file = os.getenv('IMGS_CONFIG')
+log.debug(f'Using config: {config_file}')
+config_module = importlib.import_module(config_file, package=None)
+Config = config_module.Config
+log.info(f'Secret key: {Config.SECRET_KEY}')
+
+# Start app
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Plugins
+Bootstrap(app)  # Bootstrap
+CORS(app)  # CORS
+login_manager = LoginManager(app)  # Login
+login_manager.login_view = "login"
+login_manager.login_message_category = "warning"
 
 # Database
 db = SQLAlchemy(app)
