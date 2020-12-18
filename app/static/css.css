@@ -1,0 +1,17 @@
+.grid-item-img {
+  border: 3px solid transparent;
+  opacity: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logo {
+  max-height: 40px;
+}
+
+.container{
+  margin-top: 50px;
+}
+
+.grid-item-img.active {border-color: #007bff;}

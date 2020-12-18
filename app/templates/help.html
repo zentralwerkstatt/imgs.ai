@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row">
+		<div class="col">
+			
+			<h4>Selecting query images</h4>
+			<p>The <i>imgs.ai</i> <a href="{{ url_for('interface') }}">Interface</a> consists of two halves, divided by a toolbar. The upper half shows the query images, the lower half shows the search results. Immediately after logging in, the lower half will show a random selection of images from the current dataset. Query images can be added by selecting images from the lower half and clicking either the "Positive" or "Negative" buttons, or by clicking the "Upload" button and uploading a local file to the server. Query images can be removed by selecting them and clicking the Remove button.</p>
+			
+			<h4>Positive and negative examples</h4>
+			<p>Query images can be defined either as positive or negative examples. Positive examples return similar results, negative examples return dissimilar results. A common use case is to define unwanted results of an initial search as negative examples, thus refining the search (see <a href="#Examples">Examples</a> below).</p>
+			
+			<h4>Inspecting images</h4>
+			<p>Double-clicking an image will open either a full resolution file (in local datasets), or the institutional website that the image is attached to (in live datasets).</p>
+			
+			<h4>Cross-dataset search</h4>
+			<p>On switching datasets, all positive query images will be kept and can thus be used with the new dataset. This allows an infinite, cross-dataset search. Depending on the number of images this can take from a few seconds (for a single image) to several minutes (for 10+) images.</p>
+						
+			<h4>Datasets</h4>
+			<p><b><u>The datasets made available through <i>imgs.ai</i> are intended for research purposes only and are not part of the software.</u></b> The following datasets can be selected in the imgs.ai Web version:</p>
+			<ul>
+				<li><i>Annunciations</i>. An iconographic dataset of annunciation images, scraped from multiple art-historical image archives.</li>
+				<li><i>MoMA</i>. All works in the <a href="https://www.moma.org/collection/">Museum of Modern Art, New York, collection</a> that are available online. This is a live dataset, images are pulled from the MoMA servers on request, and double-clicking an image opens the MoMA website work page.</li>
+				<li><i>Met</i>. About 180,000 works from the <a href="https://www.metmuseum.org/art/collection">Metropolitan Museum collection</a>, as distributed through the 2020 <a href="https://www.kaggle.com/c/imet-2020-fgvc7">Kaggle iMet competition.</a></li>
+				<li><i>Harvard</i>. All objects from <a href="http://waywiser.fas.harvard.edu/collections">Harvard University's Collection of Historical Scientific Instruments</a> that are available online. Clean dataset, with well-photographed, single-object images.</li>
+				<li><i>Rezeption</i>. Contains a large number of derivatives and reproductions of four antique statues: Laocoon group, Boy with Thorn, Farnese Hercules, and Apollo Belvedere. This is a good dataset to see the effects of different embeddings on a search query.</li>
+				<li><i>CelebA</i>. A dataset from computer science featuring about 200,000 aligned portraits of celebrities. We include this dataset as a means to test facial landmark embeddings.</li>
+				<li><i>Rijksmuseum</i>. A random selection of about 50,000 images from the <a href="https://www.rijksmuseum.nl/en/search">Rijksmuseum collection</a>. This is a live dataset, images are pulled from the Rijksmuseum servers on request, and double-clicking an image opens the Rijksmuseum website work page.</li>
+			</ul>
+			<p>Please note that of these datasets, only the MoMA dataset is included in the local version.</p>
+			
+			<h4>Embeddings</h4>
+			<p><i>imgs.ai</i> utilizes <a href="https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture">neural network embeddings</a> to find similar images. Out of the box, the system offers four different kinds of embeddings to guide the search but can be easily extended through scripting (in the local version, see <a href="#Training">Training</a>). Switching between embeddings is computationally cheap and should be used often to improve search results. Please note that not all embeddings are available for every test dataset, depending on the nature of the dataset. For instance, for the Harvard scientific instrument dataset, which consists almost exclusively of inanimate objects, human poses are irrelevant and thus unavailable.</p>
+			<ul>
+				<li><i>vgg19</i>. Activations of the first fully connected layer of a VGG-19 neural network pre-trained on ImageNet. Can detect meaningful, high-level semantic and syntactic features of an image.</li>
+				<li><i>pose</i>. Detects the presence, and pose, of human figures in an image. Images are similar if they feature human figures in similar poses.</li>
+				<li><i>face</i>. Detects the identity of people in an image based on facial landmarks.</li>
+				<li><i>raw</i>. Compares images based on raw pixel values: similar images will often be similar in color distribution.</li>
+			</ul>
+			
+			<h4>Metrics</h4>
+			<p>If multiple query images are selected, results are influenced by the choice of metric.</p>
+			<ul>
+				<li><i>ranking</i>. Selects the nearest neighbors for each query image separately, then ranks them by distance score.</li>
+				<li><i>centroid</i>. Finds the point in vector space in-between all query images. Results will feature images that share aspects of all query images.</li>
+			</ul>
+			
+			<h4>Distances</h4>
+			<p>The distance between two points in embedding space, and thus the similarity of the embedded images, can be measured in several ways.</p>
+			<ul>
+				<li><i>manhattan</i> distance. The distance between two points measured along axes at right angles. See <a href="https://en.wikipedia.org/wiki/Taxicab_geometry">this article</a> for details.</li>
+				<li><i>angular</i> distance. Also: cosine similarity. See <a href="https://en.wikipedia.org/wiki/Cosine_similarity">this article</a> for details.</li>
+				<li><i>euclidean</i> distance. Length of the direct line between two points in vector space.</li>
+			</ul>
+			
+			<h4>More settings</h4>
+			<p>The number of neighbors to pull for each search, as well as the global image size, can be changed on the <a href="{{ url_for('settings') }}">Settings</a> page.</p>
+			
+			<h4 id="Training">Training</h3>
+			<p>User datasets can only be added to the system when it is run locally. We will make <i>imgs.ai</i> available under an open source license soon.</p>
+			
+			<h4 id="Examples">Examples</h4>
+			<ul>
+				<li><a href="{{ url_for('static', filename='moma.gif') }}">Simple upload search (dataset: MoMA)</a></li>
+				<li><a href="{{ url_for('static', filename='rezeption.gif') }}">Multiple embedding search from difficult query (dataset: Rezeption)</a></li>
+				<li><a href="{{ url_for('static', filename='met.gif') }}">Positive/negative, multiple embedding search across datasets (datasets: Met, CelebA)</a></li>
+			</ul>
+		</div>
+</div>
+{% endblock %}
