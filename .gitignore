@@ -6,6 +6,5 @@ models/*
 !models/moma_url
 models/moma_url/uploads.hdf5
 migrations/
-logs/
 uploads/
 app/static/node_modules/
