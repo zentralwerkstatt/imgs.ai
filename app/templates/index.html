@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+	<div class="row">
+		<div class="col-xl">
+			<p><i>imgs.ai</i> is a fast, dataset-agnostic, deep visual search engine for digital art history based on neural network embeddings. Its main feature is the concept of "re-search": results from a search can immediately form the basis of another search. This allows the intuitive exploration of an image corpus, while results are continuously refined.</p>
+			<p><i>imgs.ai</i> utilizes modern approximate k-NN algorithms via <a href="https://github.com/spotify/annoy">Spotify's Annoy library</a> to deliver fast search results even for very large datasets in low-resource environments. It is currently in beta and will be made available under an open source license. Sign up for a beta test account <a href="{{ url_for('signup') }}">here</a> (requires approval).</p>
+			<p>Watch Peter Bell's art historical introduction: <a href="https://www.video.uni-erlangen.de/clip/id/20790">German</a> / <a href="https://www.video.uni-erlangen.de/clip/id/20791">English</a></p>
+			<p><i>imgs.ai</i> is developed by <a href="https://zentralwerkstatt.org">Fabian Offert</a>, with contributions by <a href="https://www.kunstgeschichte.phil.fau.de/institut/team/peter-bell/">Peter Bell</a> and Oleg Harlamov. Get in touch at <a href="mailto:hi@imgs.ai">hi@imgs.ai</a></p>
+		</div>
+		<div class="col-xl">
+			<img class="img-fluid mx-auto" src="{{ url_for('static', filename='met.gif') }}">
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<hr>
+		</div>
+	</div>
+	<div class="row align-items-center">
+		<div class="col-xl-2">
+			<img class="img-fluid logo" src="{{ url_for('static', filename='fau.png') }}">
+		</div>
+		<div class="col-xl-2">
+			<img class="img-fluid logo" src="{{ url_for('static', filename='ucsb.png') }}">
+		</div>
+	</div>
+</div>
+{% endblock %}

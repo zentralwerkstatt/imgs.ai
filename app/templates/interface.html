@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<form id="upload" action="{{ url_for('interface') }}" method="POST" enctype="multipart/form-data"></form>
+<form id="actions" action="{{ url_for('interface') }}" method="POST"></form>
+<select hidden id="add-pos" name="add-pos" multiple form="actions"></select>
+<select hidden id="remove" name="remove" multiple form="actions"></select>
+<select hidden id="add-neg" name="add-neg" multiple form="actions"></select>
+<input hidden id="file" type="file" name="file" multiple onchange="$('.container').hide(); this.form.submit()" form="upload">
+
+
+<!-- Query Images -->
+<div class="container" style="visibility:hidden;">
+	<div class="row">
+		{% if session.pos_idxs %}
+		<div class="col">
+			<div>Positive:</div>
+			<div class="grid pos">
+				{% for idx in session.pos_idxs %}
+				<div style="max-width: {{ session.size }}px" class="grid-item pos" data-trigger="hover" data-toggle="popover" data-placement="top" data-html="true" data-content="{{ popovers[idx]|safe }}" meta-href="{{ links[idx]|safe }}">
+					<img style="width:100%" class="grid-item-img pos" src="{{ images[idx]|safe }}" value="{{ idx }}" />
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+		{% if session.neg_idxs %}
+		<div class="col">
+			<div>Negative:</div>
+			<div class="grid neg">
+				{% for idx in session.neg_idxs %}
+				<div style="max-width: {{ session.size }}px" class="grid-item neg" data-trigger="hover" data-toggle="popover" data-placement="top" data-content="{{ popovers[idx]|safe }}" meta-href={{ links[idx]|safe }}>
+						<img style="width:100%" class="grid-item-img neg" src="{{ images[idx]|safe }}" value="{{ idx }}"/>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		{% endif %}
+	</div>
+
+	<hr>
+
+	<!-- Controls -->
+	<div class="row">
+		<div class="col">
+			<div class="form-inline">
+				<div class="form-group mr-2">
+					<label class="mt-2 mb-2 mr-2">Searching&nbsp;<span class="badge badge-primary">{{ session.model_len }}</span>&nbsp;images in</label>
+					<select class="custom-select mt-2 mb-2 mr-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions">
+						{% for model in Config.MODELS %}
+						<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="form-group mr-2">
+					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Upload" form="actions"
+						onclick="$('#file').trigger('click');">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Positive" form="actions"
+						onclick="return_active('add-pos')">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Negative" form="actions"
+						onclick="return_active('add-neg')">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Remove" form="actions"
+						onclick="return_active('remove')">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Clear" form="actions">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Export" form="actions">
+				</div>
+			</div>
+			<div class="form-inline">
+				<div class="form-group mr-2">
+					<label class="mt-2 mb-2 mr-2">Embedding</label>
+					<select class="custom-select mt-2 mb-2 mr-2" name="emb_type" onchange="this.form.submit()" form="actions">
+						{% for emb_type in session.emb_types %}
+						<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="form-group mr-2">
+					<label class="mt-2 mb-2 mr-2">Metric</label>
+					<select class="custom-select mt-2 mb-2 mr-2" name="mode" onchange="this.form.submit()" form="actions">
+						{% for mode in Config.MODES %}
+						<option {{ "selected" if session.mode==mode }} value="{{ mode }}">{{ mode }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="form-group mr-2">
+					<label class="mt-2 mb-2 mr-2">Distance</label>
+					<select class="custom-select mt-2 mb-2 mr-2" name="metric" onchange="this.form.submit()" form="actions">
+						{% for metric in session.metrics %}
+						<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<hr>
+
+	<!-- Search results -->
+	<div class="row">
+		<div class="col">
+			<div class="grid res">
+				{% for idx in session.res_idxs %}
+				<div style="max-width: {{ session.size }}px" class="grid-item res" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="{{ popovers[idx]|safe }}" meta-href={{ links[idx]|safe }}>
+					<img style="max-width: 100%" class="grid-item-img res" src="{{ images[idx]|safe }}" value="{{ idx }}" id="{{ idx }}" draggable="true" ondragstart="drag(event)"/>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="{{ url_for('static', filename='node_modules/packery/dist/packery.pkgd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='node_modules/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
+<script>
+	$(".grid-item-img").on("mouseenter", function(event) {
+		$(this).toggleClass('hover')
+	});
+	
+	$(".grid-item-img").on("mouseleave", function(event) {
+		$(this).toggleClass('hover')
+	});
+	
+	var $grid_pos = $(".grid.pos").imagesLoaded(function () {
+		$grid_pos.packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.pos", gutter: 3});
+	});
+	
+	var $grid_neg = $(".grid.neg").imagesLoaded(function () {
+		$grid_neg.packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.neg", gutter: 3});
+	});
+	
+	var $grid_res = $(".grid.res").imagesLoaded(function () {
+		$(".container").css("visibility", "visible");
+		$grid_res.packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.res", gutter: 3});
+	});
+	
+	$(".grid-item-img").on("click", function (event) {
+		$(this).toggleClass("active");
+	});
+	
+	$(".grid-item").on("dblclick", function (event) {
+		window.open($(this).attr("meta-href"), "_blank");
+	});
+	
+	function return_active(select) {
+		$(".active").each(function () {
+			value = $(this).attr("value");
+			console.log(value)
+			if (value != undefined){
+				$("#" + select).append(new Option(value, value, false, true));
+			} else {
+				console.log(`${$(this)}'s value yielded undefined`)
+			}
+		});
+	};
+	
+	$(function () {
+		  $('[data-toggle="popover"]').popover()
+	})
+</script>
+{% endblock %}

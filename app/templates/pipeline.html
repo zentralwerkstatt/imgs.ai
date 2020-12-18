@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block title %}Build your own pipeline{{title}}{% endblock %}
+
+{% block content %}
+{% for message in messages %}
+      <li>{{ message }}</li>
+{% endfor %}
+
+<div class="container jumbotron">
+    <div class="row">
+        <ul class="list-group col-6">
+
+            {% for embedder in embedders %}
+                <li class="list-group-item list-group-item-action {{ 'active' if embedders[embedder]['active'] }}" onclick="$(this).toggleClass('active')" data-toggle="collapse" href="#{{embedder}}_collapse" role="checkbox" aria-expanded="false" aria-controls="{{embedder}}_settings" id="{{embedder}}">{{embedder}}</li>
+                <div class="collapse multi-collapse" id="{{embedder}}_collapse">
+                    <div class="card card-body">
+                        <div class="row">
+                            <div class="col-5">
+
+                                {% if embedder == 'Raw' %}
+                                    <div class="slidecontainer">
+                                        <label for="#{{embedder}}Resolution">Resolution <span class="badge badge-primary" id="{{embedder}}ResolutionNumber">{{ embedders[embedder]['data'].resolution }}</span></label>
+                                        <input type="range" min="32" max="512" value="{{ embedders[embedder]['data'].resolution }}" step="32" class="custom-range" id="{{embedder}}Resolution" name="{{embedder}}.resolution">
+                                    </div>
+                                {% endif %}
+
+                                {% if embedder in ('Face', 'Poses') %}
+                                    <div class="slidecontainer">
+                                        <label for="#{{embedder}}ExpectedPeople">Expected no. of people <span class="badge badge-primary" id="{{embedder}}ExpectedPeople_number">{{ embedders[embedder]['data'].expected_people }}</span></label>
+                                        <input type="range" min="1" max="10" value="{{ embedders[embedder]['data'].expected_people }}" class="custom-range" id="{{embedder}}ExpectedPeople" name="{{embedder}}.expected_people">
+                                    </div>
+                                {% endif %}
+
+                                {% if embedder == 'Poses' %}
+                                    <div class="slidecontainer">
+                                        <label for="#{{embedder}}MinScore">Min. confidence score <span class="badge badge-primary" id="{{embedder}}MinScoreNumber">{{ embedders[embedder]['data'].min_score }}</span></label>
+                                        <input type="range" min="0" max="1" value="{{ embedders[embedder]['data'].min_score }}" step=".1" class="custom-range" id="{{embedder}}MinScore" name="{{embedder}}.min_score">
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                            <div class="col-7">
+
+                                {% for reducer in reducers %}
+                                <li class="list-group-item list-group-item-action {{ 'active' if embedders[embedder][reducer] }}" onclick="$(this).toggleClass('active')" data-toggle="collapse" href="#{{embedder}}{{reducer}}_collapse" role="checkbox" aria-expanded="false" aria-controls="{{embedder}}{{reducer}}_settings" id="{{embedder}}{{reducer}}_settings">{{reducer}}</li>
+                                <div class="collapse multi-collapse" id="{{embedder}}{{reducer}}_collapse" role="list">
+                                    <div class="card card-body">
+                                        <div class="slidecontainer">
+                                            <label for="#{{embedder}}{{reducer}}Dim">Dimensionality <span class="badge badge-primary" id="{{embedder}}{{reducer}}DimNumber">{{ embedders[embedder]['data'].reducer.n_components }}</span></label>
+                                            <input type="range" min="10" max="100" value="50" step="10" class="custom-range" id="{{embedder}}{{reducer}}Dim" name="{{embedder}}:{{reducer}}.dim">
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </ul>
+        <div class="col-6">
+            <form action="{{ url_for('pipeline') }}" id="pipelineForm" method="POST" enctype="multipart/form-data">
+                {{ render_form(form) }}
+            </form>
+        </div>
+    </div>
+    <br>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('.active').each(function() {
+            let collapseIdentifier = $(this).attr('href')
+            $(collapseIdentifier).collapse('show')
+        })
+    })
+
+    // Bind slider input events
+    $('.custom-range').each(function() {
+        let identifier = $(this).attr('id')
+        let output_identifier = $(`label[for="#${identifier}"] > span`).attr('id')
+        $('#' + identifier).on('input', function() {
+            $('#'+output_identifier).html(this.value)
+        })
+    })
+
+    // Fill form
+    function submitActive(){
+        $('ul > li.active').each(function() {
+            console.log($(this).text(), $(this).attr('id'))
+            let embedder_settings = $($(this).attr('href')).find('div.col-5 input')
+            embedder_settings.each(function(){
+                $(this).attr('form', 'pipelineForm')
+            })
+        })
+        $('div.col-7 > li.active').each(function() {
+            let reducer_settings = $($(this).attr('href')).find('input')
+            reducer_settings.each(function(){
+                $(this).attr('form', 'pipelineForm')
+            })
+        })
+        $('#pipelineForm').submit();
+
+        $(".wrapper").animate({
+			opacity: .3
+		});
+        $('#loading').show()
+    }
+</script>
+{% endblock %}

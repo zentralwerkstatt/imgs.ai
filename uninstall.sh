@@ -1,0 +1,1 @@
+conda env remove -n imgs.ai

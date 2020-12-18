@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<div class="container jumbotron">
+	<div class="row">
+		<div class="col">
+			<form id="settings" action="{{ url_for('interface') }}" method="POST"></form>
+
+			<div class="form-group">
+				<label>Neighbors</label>
+				<select class="custom-select" name="n" form="settings">
+					{% for n in Config.NS %}
+					<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
+					{% endfor %}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label>Size</label>
+				<select class="custom-select" name="size" form="settings">
+					{% for size in Config.SIZES %}
+					<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
+					{% endfor %}
+				</select>
+			</div>
+
+			<input type="submit" class="btn btn-light" name="btn" value="Apply" form="settings">
+		</div>
+	</div>
+</div>
+{% endblock %}
