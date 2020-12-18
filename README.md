@@ -8,6 +8,8 @@ Please see the [project website](https://imgs.ai) for more information.
 
 ## Installation
 
+**We currently only support MacOS and Linux environments. Windows support is coming soon.**
+
 1. Download and install the [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (preferred) package manager and restart your shell to be able to use the `conda` command.
 2. Clone (`git clone https://github.com/zentralwerkstatt/imgs.ai`) or [download](https://github.com/zentralwerkstatt/imgs.ai/archive/master.zip) this repository.
 3. Change into the repository directory in a terminal, for instance with `cd imgs.ai`.
