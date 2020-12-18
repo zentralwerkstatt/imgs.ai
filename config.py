@@ -4,7 +4,6 @@ import pathlib
 
 class Config(object):
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(32)
-    print('Secret key:', SECRET_KEY)
 
     current_dir = pathlib.Path(__file__).parent.absolute()
 

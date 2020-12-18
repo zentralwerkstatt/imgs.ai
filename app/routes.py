@@ -6,7 +6,7 @@ from app import app, log, db, login_manager, models
 from model import EmbeddingModel
 from app.user import User, create_user
 from app.session import Session
-from config import Config
+from app import Config
 import time
 import os
 from embedders import EmbedderFactory, ReducerFactory, Embedder

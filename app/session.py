@@ -1,13 +1,11 @@
 import os
 import numpy as np
-from config import Config
 from util import sample_range
 from io import BytesIO
 import time
 import numpy as np
 import PIL.Image
-from app import models, log
-from config import Config
+from app import models, log, Config
 from flask import url_for, send_from_directory
 
 
