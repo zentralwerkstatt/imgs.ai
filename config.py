@@ -21,7 +21,7 @@ class Config(object):
     MODES = ["ranking", "centroid"]
     DEFAULT_MODE = "ranking"
 
-    SESSION_COOKIE_SECURE = True # Activate in production
+    SESSION_COOKIE_SECURE = False # Activate in production
     REMEMBER_COOKIE_SECURE = False # Activate in production
     USER_MGMT = False # Activate in production
     TRAINING = True # Deactivate in production
