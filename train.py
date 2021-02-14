@@ -23,11 +23,7 @@ def collect_embed(X, embedders, data_root, num_workers, embs_file):
     log.info("Allocating space")
     embs = h5py.File(embs_file, "w")
     for emb_type, embedder in embedders.items():
-        if not embedder['active']:
-            continue
-        log.debug(embedder['data'].feature_length)
         data = np.zeros((len(X), embedder['data'].feature_length))
-        log.debug(f'DATA: {data.shape}')
         embs.create_dataset(emb_type.lower(), compression="lzf", data=data)
 
     # Set up threading
@@ -65,8 +61,6 @@ def collect_embed(X, embedders, data_root, num_workers, embs_file):
             if img:
                 with l:
                     for emb_type, embedder in embedders.items():
-                        if not embedder['active']:
-                            continue
                         embs[emb_type.lower()][i] = embedder['data'].transform(img, device)
                     valid_idxs.append(i)
                     success = True
@@ -93,7 +87,7 @@ def collect_embed(X, embedders, data_root, num_workers, embs_file):
     embs.close()
 
 
-def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular", "euclidean", "manhattan"], n_trees=10):
+def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular", "euclidean", "manhattan"], n_trees=100):
     log.info(f'Checking {model_folder}')
     new_dir(model_folder)
 
@@ -122,8 +116,6 @@ def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular"
     # Reduce if reducer given
     log.info(f'Applying dimensionality reduction')
     for emb_type, embedder in embedders.items():
-        if not embedder['active']:
-            continue
         data = embs[emb_type.lower()]
         if embedder['data'].reducer:
             data = embedder['data'].reducer.fit_transform(embs[emb_type.lower()])
@@ -133,8 +125,6 @@ def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular"
     log.info(f'Building neighborhoods')
     config["hood_files"] = {}
     for emb_type, embedder in embedders.items():
-        if not embedder['active']:
-            continue
         config["hood_files"][emb_type.lower()] = {}
         for metric in metrics:
             if embedder['data'].reducer:
@@ -161,8 +151,6 @@ def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular"
     # Save fitted embedders
     log.info("Writing additional data")
     for emb_type, embedder in embedders.items():
-        if not embedder['active']:
-            continue
         embedder['data'].model = None  # Delete models to save memory
     embedders_file = os.path.join(model_folder, "embedders.pickle")
     with open(embedders_file, "wb") as f:
@@ -173,8 +161,6 @@ def train(X, model_folder, embedders, data_root, num_workers, metrics=["angular"
     config["dims"] = {}
     config["emb_types"] = []
     for emb_type, embedder in embedders.items():
-        if not embedder['active']:
-            continue
         config["dims"][emb_type.lower()] = {}
         config["emb_types"].append(emb_type.lower())
         if embedder['data'].reducer:

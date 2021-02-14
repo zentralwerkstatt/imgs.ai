@@ -54,6 +54,9 @@
 					</select>
 				</div>
 				<div class="form-group mr-2">
+					{% if session.emb_type=='clip'%}
+						<input type="text" name="clip_prompt" placeholder="Enter CLIP query and press return" form=actions>
+					{% endif %}
 					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Upload" form="actions"
 						onclick="$('#file').trigger('click');">
 					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Positive" form="actions"

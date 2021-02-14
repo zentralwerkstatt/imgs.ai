@@ -1,12 +1,14 @@
 import os
 import numpy as np
-from util import sample_range
+from util import sample_range, set_cuda
 from io import BytesIO
 import time
 import numpy as np
 import PIL.Image
 from app import models, log, Config
 from flask import url_for, send_from_directory
+import torch as t
+import clip
 
 
 # Per-user state, deals with server-side models and serialization as client session
@@ -102,6 +104,39 @@ class Session:
             else:
                 idxs = sample_range(self.model_len, k)
             self.res_idxs = [str(idx) for idx in idxs]  # Indices are strings
+
+    def get_nns_CLIP(self, sentence):
+
+        log.debug(sentence)
+        log.debug(set_cuda())
+
+        model, _ = clip.load("ViT-B/32", device=set_cuda()) # Not using preprocess
+        tokenizer = clip.simple_tokenizer.SimpleTokenizer()
+
+        def get_text_features(sentence):
+            text_tokens = [tokenizer.encode("%s "%(sentence) + "<|endoftext|>")]
+            text_input = t.zeros(len(text_tokens), model.context_length, dtype=t.long)
+            for i, tokens in enumerate(text_tokens):
+                text_input[i, :len(tokens)] = t.tensor(tokens)
+                
+            text_input = text_input.cuda()
+            with t.no_grad():
+                text_features = model.encode_text(text_input).float()
+                text_features /= text_features.norm(dim=-1, keepdim=True)
+
+            return text_features
+
+        vector = get_text_features(sentence).cpu().numpy()
+
+        self.res_idxs = models[self.model].get_nns(
+            emb_type=self.emb_type,
+            n=int(self.n),
+            pos_idxs=self.pos_idxs,
+            neg_idxs=self.neg_idxs,
+            vector=vector,
+            metric=self.metric,
+            mode=self.mode,
+            )
 
     def render_nns(self):
         # Get metadata and load thumbnails

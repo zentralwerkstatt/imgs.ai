@@ -7,16 +7,12 @@ import torch.nn as nn
 import face_recognition
 from copy import deepcopy
 from collections import defaultdict
-from app import log
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+import clip
 
 
-class Embedder:
-    def __str__(self):
-        return self.__class__.__name__ + '(' + ', '.join([f'{key}={val}' for key, val in self.__dict__.items()]) + ')'
-
-class Embedder_Raw(Embedder):
+class Embedder_Raw:
 
     model = None
 
@@ -32,7 +28,7 @@ class Embedder_Raw(Embedder):
         return output.astype(np.uint8).flatten()
 
 
-class Embedder_Face(Embedder):
+class Embedder_Face:
 
     feature_length = 128
     model = None
@@ -48,7 +44,7 @@ class Embedder_Face(Embedder):
         return output.astype(np.float32).flatten()
 
 
-class Embedder_VGG19(Embedder):
+class Embedder_VGG19:
 
     feature_length = 4096
     model = None
@@ -73,6 +69,34 @@ class Embedder_VGG19(Embedder):
             output = self.model(self.transforms(img).unsqueeze(0).to(device))
             return from_device(output).astype(np.float32).flatten()
 
+class Embedder_CLIP:
+
+    feature_length = 512
+    model = None
+
+    def __init__(self, reducer=None, keep=False):
+        self.reducer = reducer
+        self.keep = keep
+
+    def transform(self, img, device="cpu"):
+        if self.model is None:
+            self.model, _ = clip.load("ViT-B/32", device=device) # Not using preprocess
+            self.model.eval()
+            input_resolution = self.model.input_resolution.item()
+            self.transforms = tv.transforms.Compose(
+                [tv.transforms.Resize(input_resolution, interpolation=PIL.Image.BICUBIC), tv.transforms.CenterCrop(input_resolution), tv.transforms.ToTensor()]
+            )
+        
+        image_mean = t.tensor([0.48145466, 0.4578275, 0.40821073]).to(device)
+        image_std = t.tensor([0.26862954, 0.26130258, 0.27577711]).to(device)
+
+        with t.no_grad():
+            input_ = self.transforms(img).unsqueeze(0).to(device)
+            input_ -= image_mean[:, None, None]
+            input_ /= image_std[:, None, None]
+            output = self.model.encode_image(input_)
+            output /= output.norm(dim=-1, keepdim=True)
+            return from_device(output).astype(np.float32).flatten()
 
 class Embedder_Poses:
     # FIXED BUG: Memory leak when run on CPU (https://github.com/pytorch/pytorch/issues/29809)
@@ -130,38 +154,3 @@ class Embedder_Poses:
             keypoints = from_device(output[0]["keypoints"])
             normalized_keypoints = self._normalize_keypoints(keypoints, scores)
             return normalized_keypoints.astype(np.float32).flatten()
-
-
-class EmbedderFactory:
-    def create(self, embedder, params):
-        result = False
-
-        if embedder.lower() == 'raw':
-            result = Embedder_Raw(**params)
-        elif embedder.lower() == 'vgg19':
-            result = Embedder_VGG19(**params)
-        elif embedder.lower() == 'face':
-            result = Embedder_Face(**params)
-        elif embedder.lower() == 'poses':
-            result = Embedder_Poses(**params)
-
-        return result
-
-    def set_params(self, embedder, param, value):
-        setattr(embedder, param, value)
-        return embedder
-
-
-class ReducerFactory:
-    def create(self, reducer, params):
-        result = False
-
-        if reducer.lower() == 'pca':
-            result = PCA(**params)
-        elif reducer.lower() == 'tsne':
-            result = TSNE(**params)
-
-        return result
-
-    def set_params(self, reducer, param, value):
-        setattr(reducer, param, value)
