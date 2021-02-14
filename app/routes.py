@@ -9,8 +9,6 @@ from app.session import Session
 from app import Config
 import time
 import os
-from embedders import EmbedderFactory, ReducerFactory, Embedder
-from train import make_model
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from functools import lru_cache
@@ -117,7 +115,7 @@ def interface():
 
     # Uploads
     if request.files:
-        session.extend(request.files.getlist("file"))
+        session.extend(request.files.getlist("file"), Config.UPLOADS_PATH)
 
     # Settings
     if "n" in request.form:
@@ -164,7 +162,6 @@ def interface():
                     yield '-,' + path + '\n'
             return Response(generate(), mimetype='text')
 
-    # Handle single drag&drops
     if 'add-pos' in request.form:
         new_pos = set(request.form.getlist("add-pos"))
         session.pos_idxs = list(set(session.pos_idxs) | new_pos) # Union of sets
@@ -180,9 +177,13 @@ def interface():
         if session.model != request.form["model"]: # Only reload and reset if model changed
             session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
 
-    # Search
     start = time.process_time()
-    session.get_nns()
+    # CLIP search
+    if "clip_prompt" in request.form and request.form["clip_prompt"] and session.emb_type == "clip":
+        session.get_nns_CLIP(request.form["clip_prompt"])
+    # Regular search
+    else:
+        session.get_nns()
     log.info(
         f"Search by {current_user} in {session.model} completed in {time.process_time() - start}, returning {len(session.res_idxs)} results"
     )
@@ -205,84 +206,3 @@ def interface():
         links=links,
         images=images
     )
-
-
-@app.route("/pipeline", methods=["GET", "POST"])
-@cond_login_required
-def pipeline():
-    # Load from cookie
-    session = Session(flask_session)
-    
-    embedders = ['Raw', 'VGG19', 'Face', 'Poses']
-    reducers = ['PCA', 'TSNE']
-
-    embedder_data = {}
-    form = EmbedderForm()
-    
-    embedder_factory = EmbedderFactory()
-    reducer_factory = ReducerFactory()
-
-    for embedder in embedders:
-        if embedder not in embedder_data:
-            embedder_data[embedder] = {'data': embedder_factory.create(embedder, {}), 'active': False}
-        for reducer in reducers:
-            embedder_data[embedder][reducer] = False
-
-    if request.method == "POST":
-        log.debug(request.form)
-
-        project_name = request.form['projectName']
-        model_folder = os.path.join(Config.MODELS_PATH, project_name)
-
-        if not os.path.isdir(model_folder):
-            os.mkdir(model_folder)
-
-        # Handle data file
-        url_fpath = os.path.join(model_folder, project_name) + ".csv"
-        log.debug(request.files)
-        url_file = request.files['urlPerLineFile']
-        url_file.save(url_fpath)
-        url_file.close()
-
-        for key, value in request.form.items():
-            if key in ('csrf_token', 'projectName', 'urlPerLineFile', 'submit'):
-                continue
-
-            if ':' not in key: #includes setting
-                log.debug(key)
-                embedder, setting = key.split('.')
-                if setting.endswith('min_score'): # Hacky, change
-                    digitize = lambda s: float(s) 
-                else:
-                    digitize = lambda s: int(s)
-                embedder_factory.set_params(embedder_data[embedder]['data'], setting, digitize(value))
-                embedder_data[embedder]['active'] = True
-
-            else: #includes reducer
-                embedder, reducer = key.split(':')
-                reducer = reducer.split('.')[0]
-
-                n_samples = len(open(url_fpath).read().split('\n')) - 1
-                if n_samples < int(value):
-                    value = n_samples
-
-                reducer_object = reducer_factory.create(reducer, {'n_components': int(value)})
-                embedder_factory.set_params(embedder_data[embedder]['data'], 'reducer', reducer_object)
-                embedder_data[embedder][reducer] = reducer_object
-                # Handle front-end active elements
-                print(embedder_data[embedder])
-        
-        try:
-            make_model(model_folder=model_folder, embedders=embedder_data, data_root=url_fpath)
-        except KeyError as error:
-            flash(error, 'danger')
-            return render_template('pipeline.html', embedders=embedder_data, reducers=reducers, form=form)
-
-        Config.MODELS.append(project_name)
-        models[project_name] = EmbeddingModel()
-        models[project_name].load(model_folder)
-        session.load_model(project_name)
-
-        flash('Successfully created image vectors', 'success')
-
-    return render_template('pipeline.html', title="imgs.ai", Config=Config, embedders=embedder_data, reducers=reducers, form=form)

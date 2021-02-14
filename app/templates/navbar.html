@@ -5,9 +5,6 @@
 		{{ nav_link('index', 'About') }}
 		{{ nav_link('interface', 'Interface') }}
 		{{ nav_link('settings', 'Settings') }}
-		{% if Config.TRAINING %}
-			{{ nav_link('pipeline', 'Training') }}
-		{% endif %}
 		{{ nav_link('help', 'Help') }}
 		{% if Config.USER_MGMT %}
 			{% if not current_user.is_anonymous and current_user.id==1 %}

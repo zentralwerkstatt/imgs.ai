@@ -71,7 +71,7 @@ class EmbeddingModel:
 
         return idxs
 
-    def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, mode="ranking", search_k=-1, limit=None):
+    def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, vector=None, mode="ranking", search_k=-1, limit=None):
         # Load neighborhood file
         hood_file = os.path.join(
             self.model_folder, self.config["hood_files"][emb_type][metric]
@@ -142,9 +142,10 @@ class EmbeddingModel:
             nns = list(sort_dict(ranking).keys())
 
         else:  # Single
-            vector = vectors_from_idxs(pos_idxs)[0]
+            if vector is None:
+                vector = vectors_from_idxs(pos_idxs)
             nns = ann.get_nns_by_vector(
-                vector, n, search_k=search_k, include_distances=False
+                vector[0], n, search_k=search_k, include_distances=False
             )
 
         # Unload neighborhood file
