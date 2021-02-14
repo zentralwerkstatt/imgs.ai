@@ -22,7 +22,7 @@ User management is turned off by default. To turn it on, change the `USER_MGMT` 
 
 ## Models
 
-We inclprovide the "MoMA" dataset, in a "regular" and a "CLIP" flavor for testing purposes only ([download here](https://drive.google.com/file/d/1W4wjLDNbU7TwKXNFzcim5vpKjDXZJ0x1/view?usp=sharing) and extract to `models` folder). The dataset is trained on all works in the <a href="https://www.moma.org/collection/">Museum of Modern Art, New York, collection</a> that are available online. This is a live dataset, images are pulled from the MoMA servers on request. Double-clicking an image opens the MoMA website work page.
+We provide the "MoMA" dataset, in a "regular" and a "CLIP" flavor for testing purposes only ([download here](https://drive.google.com/file/d/1W4wjLDNbU7TwKXNFzcim5vpKjDXZJ0x1/view?usp=sharing) and extract to `models` folder). The dataset is trained on all works in the <a href="https://www.moma.org/collection/">Museum of Modern Art, New York, collection</a> that are available online. This is a live dataset, images are pulled from the MoMA servers on request. Double-clicking an image opens the MoMA website work page.
 
 ## Limitations
 
