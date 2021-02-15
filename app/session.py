@@ -108,25 +108,22 @@ class Session:
     def get_nns_CLIP(self, sentence):
 
         log.debug(sentence)
-        log.debug(set_cuda())
+        device = set_cuda()
 
-        model, _ = clip.load("ViT-B/32", device=set_cuda()) # Not using preprocess
+        model, _ = clip.load("ViT-B/32", device=device) # Not using preprocess
         tokenizer = clip.simple_tokenizer.SimpleTokenizer()
 
-        def get_text_features(sentence):
-            text_tokens = [tokenizer.encode("%s "%(sentence) + "<|endoftext|>")]
-            text_input = t.zeros(len(text_tokens), model.context_length, dtype=t.long)
-            for i, tokens in enumerate(text_tokens):
-                text_input[i, :len(tokens)] = t.tensor(tokens)
-                
-            text_input = text_input.cuda()
-            with t.no_grad():
-                text_features = model.encode_text(text_input).float()
-                text_features /= text_features.norm(dim=-1, keepdim=True)
+        text_tokens = [tokenizer.encode("%s "%(sentence) + "<|endoftext|>")]
+        text_input = t.zeros(len(text_tokens), model.context_length, dtype=t.long)
+        for i, tokens in enumerate(text_tokens):
+            text_input[i, :len(tokens)] = t.tensor(tokens)
+            
+        text_input = text_input.to(device)
+        with t.no_grad():
+            text_features = model.encode_text(text_input).float()
+            text_features /= text_features.norm(dim=-1, keepdim=True)
 
-            return text_features
-
-        vector = get_text_features(sentence).cpu().numpy()
+        vector = text_features.cpu().numpy()
 
         self.res_idxs = models[self.model].get_nns(
             emb_type=self.emb_type,
