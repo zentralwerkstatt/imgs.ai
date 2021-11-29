@@ -1,0 +1,32 @@
+{
+  "name": "imgs.ai",
+  "version": "1.0.0",
+  "description": "imgs.ai is a fast, dataset-agnostic, deep visual search engine for digital art history based on neural network embeddings.",
+  "main": "imgs.ai.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zentralwerkstatt/imgs.ai.git"
+  },
+  "keywords": [
+    "computer vision",
+    "machine learning",
+    "digital art history"
+  ],
+  "author": "Fabian Offert",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zentralwerkstatt/imgs.ai/issues"
+  },
+  "homepage": "https://github.com/zentralwerkstatt/imgs.ai#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "popper.js": "^1.16.1",
+    "bootstrap": "^4.5.2",
+    "imagesloaded": "^4.1.4",
+    "jquery": "^3.5.1",
+    "packery": "^2.1.2"
+  }
+}

@@ -1,0 +1,7 @@
+config_server.py
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+.vscode/
+app/static/node_modules/
+cache/

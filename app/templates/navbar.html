@@ -1,0 +1,18 @@
+{% from "macros.html" import nav_link with context %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<ul class="navbar-nav mr-auto">
+		{% if not current_user.is_anonymous and current_user.id==1 %}
+			{{ nav_link('interface', 'Interface') }}
+			{{ nav_link('users', 'User Management') }}
+			{{ nav_link('logout', 'Logout') }}
+		{% elif current_user.is_anonymous %}
+			{{ nav_link('interface', 'Interface') }}
+			{{ nav_link('login', 'Login') }}
+			{{ nav_link('signup', 'Sign Up') }}
+		{% elif not current_user.is_anonymous %}
+			{{ nav_link('interface', 'Interface') }}
+			{{ nav_link('logout', 'Logout') }}
+		{% endif %} 
+	</ul>
+</nav>

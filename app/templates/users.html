@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<div class="container">
+	<form id="access" action="{{ url_for('users') }}" method="POST" enctype="multipart/form-data"></form>
+	<table class="table table-hover">
+		<tbody>
+			{% for user in users %}
+			<tr>
+				<td>{{ user.id }}</td>
+				<td>{{ user.username }}</td>
+				<td>{{ user.email }}</td>
+				<td>
+					<div class="btn-group btn-group-toggle" data-toggle="buttons">
+						<label class="btn btn-secondary {{ 'btn-success' if user.access }}">
+							<input type="radio" form="access" name="{{ user.id }}" id="{{ user.id }}" value="1"
+								autocomplete="off" onchange="toggleTrue({{ user.id }})"> True
+						</label>
+						<label class="btn btn-secondary {{ 'btn-danger' if not user.access }}">
+							<input type="radio" form="access" name="{{ user.id }}" id="{{ user.id }}" value="0"
+								autocomplete="off" onchange="toggleFalse({{ user.id }})"> False
+						</label>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<script>
+
+	function toggleTrue(id) {
+		document.getElementById(id).parentElement.classList.toggle('btn-success');
+		document.getElementById(id).form.submit();
+	};
+
+	function toggleFalse(id) {
+		document.getElementById(id).parentElement.classList.toggle('btn-danger');
+		document.getElementById(id).form.submit();
+	};
+	
+</script>
+{% endblock %}

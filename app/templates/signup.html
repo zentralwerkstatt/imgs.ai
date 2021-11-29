@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+<div class="container">
+	<h3>Create your account</h3>
+	<hr>
+	{{ render_form(form) }}
+	<hr>
+	<span>Already have an account? <a href="{{ url_for('login') }}">Log in</a></span>
+</div>
+{% endblock %}
