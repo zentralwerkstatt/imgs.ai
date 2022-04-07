@@ -76,14 +76,6 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/cdn/<idx>")
-@lru_cache(maxsize=1000)
-def cdn(idx):
-    session = Session(flask_session)
-    root, path, _ = session.get_data(idx)
-    return send_from_directory(root, path)
-
-
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)
@@ -102,10 +94,11 @@ def source(idx):
 def explain(idx):
     session = Session(flask_session)
     url = session.get_url(idx)
-    abs_path = save_imgs_to([url], Config.CACHE)[0][0] # Returns two lists
+    abs_path = save_imgs_to([url], app.static_folder)[0][0] # Returns two lists
     hm = CLIP_gradcam(session.clip_prompt, abs_path).convert("RGB")
-    hm.save(os.path.join(Config.CACHE, f"{idx}_hm.jpg"))
-    hm_url = url_for('cdn', idx=f"{idx}_hm")
+    filename = f"{idx}_hm.jpg"
+    hm.save(os.path.join(app.static_folder, filename))
+    hm_url = url_for('static', filename=filename)
     return redirect(hm_url, code=302)
 
 

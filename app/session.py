@@ -1,7 +1,7 @@
 import os
 from app.util import sample_range, CLIP_text
-from app import models, log, Config
-from flask import url_for
+from app import app, models, log, Config
+from flask import url_for, send_from_directory
 
 
 # Per-user state, deals with server-side models and serialization as client session
@@ -69,7 +69,7 @@ class Session:
         if files: self.extend(files)
 
     def extend(self, files):
-        self.pos_idxs += models[self.model].extend(files, Config.CACHE)
+        self.pos_idxs += models[self.model].extend(files, app.static_folder)
 
     def get_nns(self):
         # If we have queries or CLIP prompt, search nearest neighbors, else display random data points
@@ -101,7 +101,7 @@ class Session:
 
     def get_data(self, idx):
         if not idx.isnumeric(): # Check if index is a number or a filename
-            root = Config.CACHE
+            root = app.static_folder
             path = f"{idx}.jpg"
             metadata = []
         else:
@@ -115,5 +115,7 @@ class Session:
 
     def get_url(self, idx):
         _, path, _ = self.get_data(idx)
-        url = path if path.startswith("http") else url_for('cdn', idx=idx) # URL or CDN
-        return url
+        if path.startswith("http") :
+            return path 
+        else:
+            return url_for("static", filename=path)

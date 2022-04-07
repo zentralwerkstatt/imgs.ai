@@ -6,10 +6,9 @@ class Config(object):
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(32)
 
     current_dir = pathlib.Path(__file__).parent.absolute()
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{current_dir}users.db"  # Absolute
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{current_dir}/users.db"  # Absolute
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    CACHE = f"{current_dir}/cache"  # Absolute
     MODELS_PATH = f"{current_dir}/models"  # Absolute
     MODEL_NAMES_PRIVATE = sorted([f.name for f in os.scandir(os.path.join(MODELS_PATH, "private")) if f.is_dir()])
     MODEL_NAMES_PUBLIC = sorted([f.name for f in os.scandir(os.path.join(MODELS_PATH, "public")) if f.is_dir()])

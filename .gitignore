@@ -4,4 +4,5 @@ config_server.py
 __pycache__/
 .vscode/
 app/static/node_modules/
-cache/
+app/static/*.jpg
+!app/static/social.jpg
