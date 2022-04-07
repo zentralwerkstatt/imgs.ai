@@ -168,8 +168,17 @@ def interface():
     # Get NNs
     start = time.process_time()
     session.get_nns()
+
+
+    # Logging
+    # See https://github.com/mattupstate/flask-security/blob/4049c0620383f42d37950c7a35af5ddd6df0540f/flask_security/utils.py#L65
+    if 'X-Forwarded-For' in request.headers:
+        remote_addr = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+    else:
+        remote_addr = request.remote_addr or 'untrackable'
+
     log.info(
-        f"Search by {request.remote_addr} for {search_target} in {session.model} completed in {time.process_time() - start}, returning {len(session.res_idxs)} results"
+        f"Search by {remote_addr} for {search_target} in {session.model} completed in {time.process_time() - start}, returning {len(session.res_idxs)} results"
     )
 
     # Store in cookie
