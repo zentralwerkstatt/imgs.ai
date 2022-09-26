@@ -22,6 +22,11 @@ def index():
     return redirect(url_for("interface"))
 
 
+@app.route("/imprint")
+def imprint():
+    return render_template("imprint.html")
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     form = SignupForm()
