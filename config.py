@@ -20,3 +20,7 @@ class Config(object):
 
     SESSION_COOKIE_SECURE = False # Activate in production
     REMEMBER_COOKIE_SECURE = False # Activate in production
+
+    DEFAULT_USERNAME = "hi@imgs.ai" # Change in production
+    DEFAULT_EMAIL = "hi@imgs.ai" # Change in production
+    DEFAULT_PASSWORD = "hi@imgs.ai" # Change in production

@@ -57,3 +57,11 @@ for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC:
         models[model].load(MODEL_PATH)
 
 from app import user, routes
+
+# Initialize default user
+with app.context:
+    db.create_all()
+    default_user = user.User(username=Config.DEFAULT_USERNAME, email=Config.DEFAULT_EMAIL, access=True)
+    default_user.set_password(Config.DEFAULT_PASSWORD)
+    db.session.add(default_user)
+    db.session.commit()
