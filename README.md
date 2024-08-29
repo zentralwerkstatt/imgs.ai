@@ -15,6 +15,7 @@ Only MacOS and Linux environments are currently supported.
 3. Clone or download the repository and run the [install.sh](install.sh) shell script with your preferred shell. If you would like to install with GPU support, add the following parameter: `pytorch-cuda=12.1`, where the version number is the version of CUDA you would like PyTorch to use (this depends on your GPU and the PyTorch version, see https://pytorch.org/ for more information).
 4. To start imgs.ai, run the [run.sh](run.sh) shell script with your preferred shell.
 5. Open a web browser and navigate to `localhost:5000` to see the interface. 
+6. To access private models and use the upload function, a default user with full access is set up, username: `hi@imgs.ai`, password: `hi@imgs.ai`.
 
 **Never run imgs.ai in a production environment unless you haved adapted [config.py](config.py) and know what you are doing.**
 
