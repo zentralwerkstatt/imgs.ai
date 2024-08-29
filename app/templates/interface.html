@@ -190,10 +190,7 @@
 		
 		$("#context-menu").html("")
 		$("#context-menu").append(`<a class="dropdown-item" target="_blank" href="/full/${idx}">Full-size image</a>`);
-		$("#context-menu").append(`<a class="dropdown-item" target="_blank" href="/source/${idx}">Source URL</a>`);
-		var disable = '{{ "disabled" if session.public or (not session.clip_prompt) else ""}}'
-		$("#context-menu").append(`<a class="dropdown-item ${disable}" target="_blank" href="/explain/${idx}">Explain CLIP</a>`);
-  		
+		$("#context-menu").append(`<a class="dropdown-item" target="_blank" href="/source/${idx}">Source URL</a>`);  		
 		$("#context-menu").css({
     		display: "block",
     		top: top,

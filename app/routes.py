@@ -1,5 +1,4 @@
-from app.util import save_imgs_to, CLIP_gradcam
-from flask import render_template, flash, redirect, request, url_for, send_from_directory, Response
+from flask import render_template, flash, redirect, request, url_for
 from flask import session as flask_session
 from flask_login import current_user, login_user, logout_user, login_required
 from app.forms import SignupForm, LoginForm
@@ -8,8 +7,6 @@ from app.user import User, create_user
 from app.session import Session
 from app import Config
 import time
-import os
-from functools import lru_cache
 
 
 @login_manager.user_loader
@@ -93,18 +90,6 @@ def source(idx):
     _, _, metadata = session.get_data(idx)
     url = metadata[1]
     return redirect(url, code=302)
-
-
-@app.route("/explain/<idx>")
-def explain(idx):
-    session = Session(flask_session)
-    url = session.get_url(idx)
-    abs_path = save_imgs_to([url], app.static_folder)[0][0] # Returns two lists
-    hm = CLIP_gradcam(session.clip_prompt, abs_path).convert("RGB")
-    filename = f"{idx}_hm.jpg"
-    hm.save(os.path.join(app.static_folder, filename))
-    hm_url = url_for('static', filename=filename)
-    return redirect(hm_url, code=302)
 
 
 @app.route("/interface", methods=["GET", "POST"])
