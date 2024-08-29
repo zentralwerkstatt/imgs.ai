@@ -2,19 +2,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<ul class="navbar-nav mr-auto">
-		{% if not current_user.is_anonymous and current_user.id==1 %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('users', 'User Management') }}
-			{{ nav_link('logout', 'Logout') }}
-		{% elif current_user.is_anonymous %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('login', 'Login') }}
-		{% elif not current_user.is_anonymous %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('logout', 'Logout') }}
-		{% endif %} 
+		{{ nav_link('interface', 'Interface') }}
+		{{ nav_link('imprint', 'Imprint') }}
 	</ul>
 </nav>
