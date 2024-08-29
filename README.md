@@ -12,7 +12,7 @@ Only MacOS and Linux environments are currently supported.
 
 1. Download and install the [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (preferred) package manager.
 2. Create a Python 3.8 conda environment with `conda create --yes -n imgs.ai python=3.8` and activate it with `conda activate imgs.ai`.
-3. Clone or download the repository and run the [install.sh](install.sh) shell script with your preferred shell. If you would like to install with GPU support, add the following parameter: `cudatoolkit=10.1`, where the version number is the version of your installed CUDA framework (see https://pytorch.org/ for more information).
+3. Clone or download the repository and run the [install.sh](install.sh) shell script with your preferred shell. If you would like to install with GPU support, add the following parameter: `pytorch-cuda=12.1`, where the version number is the version of CUDA you would like PyTorch to use (this depends on your GPU and the PyTorch version, see https://pytorch.org/ for more information).
 4. To start imgs.ai, run the [run.sh](run.sh) shell script with your preferred shell.
 5. Open a web browser and navigate to `localhost:5000` to see the interface. 
 
