@@ -6,7 +6,7 @@ pip install git+https://github.com/openai/CLIP.git
 cd app/static
 npm install
 cd ../../models/public
-gdown https://drive.google.com/file/d/1jVEjmKwv0wwTX2vt7WzAYF8F59_Tsg5s/
+gdown https://drive.google.com/uc?id=1jVEjmKwv0wwTX2vt7WzAYF8F59_Tsg5s
 unzip rma.zip
 rm rma.zip
 mv rma Rijksmuseum

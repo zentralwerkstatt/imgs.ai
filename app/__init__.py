@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import pathlib
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -59,9 +60,10 @@ for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC:
 from app import user, routes
 
 # Initialize default user
-with app.context:
-    db.create_all()
-    default_user = user.User(username=Config.DEFAULT_USERNAME, email=Config.DEFAULT_EMAIL, access=True)
-    default_user.set_password(Config.DEFAULT_PASSWORD)
-    db.session.add(default_user)
-    db.session.commit()
+if not pathlib.Path("users.db").is_file():
+    with app.app_context():
+        db.create_all()
+        default_user = user.User(username=Config.DEFAULT_USERNAME, email=Config.DEFAULT_EMAIL, access=True)
+        default_user.set_password(Config.DEFAULT_PASSWORD)
+        db.session.add(default_user)
+        db.session.commit()
