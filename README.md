@@ -17,7 +17,7 @@ Only MacOS and Linux environments are currently supported.
 5. Open a web browser and navigate to `localhost:5000` to see the interface. 
 6. To access private models and use the upload function, a default user with full access is set up, username: `hi@imgs.ai`, password: `hi@imgs.ai`.
 
-**Never run imgs.ai in a production environment unless you haved adapted [config.py](config.py) and know what you are doing.**
+**Never run imgs.ai in a production environment unless you have adapted [config.py](config.py) and know what you are doing.**
 
 We provide the Rijksmuseum dataset (embeddings only) for testing purposes. The dataset is trained on nearly 400,000 works in the [Rijksmuseum](https://www.rijksmuseum.nl) collection. This is a live dataset, images are pulled from the Rijksmuseum servers on request. Right-click an image to go to the source website on the Rijksmuseum servers.
 
