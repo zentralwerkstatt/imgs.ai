@@ -11,7 +11,6 @@ import time
 import random
 from flask import send_file
 from io import StringIO
-from matplotlib import cm
 import clip
 
 
