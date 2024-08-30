@@ -18,7 +18,7 @@ class Embedder_Raw:
         self.metrics = metrics
 
     def transform(self, img, device="cpu"):
-        img = img.resize((self.resolution, self.resolution), PIL.Image.ANTIALIAS)
+        img = img.resize((self.resolution, self.resolution), PIL.Image.LANCZOS)
         output = np.array(img)
         return output.astype(np.uint8).flatten()
 
