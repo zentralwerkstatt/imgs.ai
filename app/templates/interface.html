@@ -189,8 +189,8 @@
 		var idx = $(this).attr('value');
 		
 		$("#context-menu").html("")
-		$("#context-menu").append(`<a class="dropdown-item" target="_blank" href="/full/${idx}">Full-size image</a>`);
-		$("#context-menu").append(`<a class="dropdown-item" target="_blank" href="/source/${idx}">Source URL</a>`);  		
+		$("#context-menu").append(`<a class="dropdown-item" href="/full/${idx}">Full-size image</a>`);
+		$("#context-menu").append(`<a class="dropdown-item" href="/source/${idx}">Source URL</a>`);  		
 		$("#context-menu").css({
     		display: "block",
     		top: top,
