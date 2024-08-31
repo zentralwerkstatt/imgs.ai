@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, request, url_for
+from flask import render_template, flash, redirect, request, url_for, Response
 from flask import session as flask_session
 from flask_login import current_user, login_user, logout_user, login_required
 from app.forms import SignupForm, LoginForm
@@ -87,9 +87,12 @@ def full(idx):
 @app.route("/source/<idx>")
 def source(idx):
     session = Session(flask_session)
-    _, _, metadata = session.get_data(idx)
+    _, metadata = session.get_data(idx)
     url = metadata[1]
-    return redirect(url, code=302)
+    if url:
+        return redirect(url, code=302)
+    else:
+        return Response(status=204)
 
 
 @app.route("/interface", methods=["GET", "POST"])

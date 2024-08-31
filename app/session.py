@@ -1,5 +1,5 @@
 import os
-from app.util import sample_range, CLIP_text
+from app.util import sample_range, CLIP_text, new_dir
 from app import app, models, log, Config
 from flask import url_for, send_from_directory
 
@@ -53,8 +53,7 @@ class Session:
         files = []
         if pin_idxs:
             for idx in pin_idxs:
-                root, path, _ = self.get_data(idx)
-                files.append(os.path.join(root, path))
+                files.append(self.get_path(idx))
 
         self.model = model
         self.model_len = models[self.model].config["model_len"]
@@ -67,9 +66,6 @@ class Session:
         self.neg_idxs = []
 
         if files: self.extend(files)
-
-    def extend(self, files):
-        self.pos_idxs += models[self.model].extend(files, app.static_folder)
 
     def get_nns(self):
         # If we have queries or CLIP prompt, search nearest neighbors, else display random data points
@@ -98,24 +94,33 @@ class Session:
                 else:
                     idxs = sample_range(self.model_len, k)
                 self.res_idxs = [str(idx) for idx in idxs]  # Indices are strings
-
-    def get_data(self, idx):
-        if not idx.isnumeric(): # Check if index is a number or a filename
-            root = app.static_folder
-            path = f"{idx}.jpg"
-            metadata = []
+    
+    def get_path(self, idx):
+        if idx.startswith("upload"): # Uploaded file
+            return f"{Config.DATA_PATH}/{self.model}/{idx}"
+        else:
+            path = models[self.model].paths[idx]
+            if path.startswith("http"): 
+                return None
+            else: # Local data
+                return os.path.join(Config.DATA_PATH, self.model, path)
+            
+    def get_url(self, idx):
+        if idx.startswith("upload"): # Uploaded file
+            return f"{Config.DATA_URL}/{self.model}/{idx}"
         else:
             path = models[self.model].paths[idx]
             if path.startswith("http"):
-                root = ""
-            else:
-                root = models[self.model].config["data_root"]
-            metadata = models[self.model].metadata[idx]
-        return root, path, metadata
+                return path
+            else: # Local data
+                return f"{Config.DATA_URL}/{self.model}/{path}"
 
-    def get_url(self, idx):
-        _, path, _ = self.get_data(idx)
-        if path.startswith("http") :
-            return path 
-        else:
-            return url_for("static", filename=path)
+    def get_metadata(self, idx):
+        return models[self.model].metadata[idx]
+
+    def extend(self, files):
+        # Check if model has a folder in DATA_PATH
+        model_data_path = os.path.join(Config.DATA_PATH, self.model)
+        if not os.path.isdir(model_data_path):
+            new_dir(model_data_path)
+        self.pos_idxs += models[self.model].extend(files, model_data_path)

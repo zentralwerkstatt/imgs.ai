@@ -20,7 +20,6 @@ class EmbeddingModel:
         self.paths = {}
         
         self.config = {
-                "data_root": None,
                 "model_len": None,
                 "emb_types": {}
             }
@@ -47,7 +46,7 @@ class EmbeddingModel:
         uploads_file = os.path.join(self.model_folder, "uploads.hdf5")
         uploads = h5py.File(uploads_file, "a")  # Read/write/create
 
-        paths, idxs = save_imgs_to(imgs, uploads_path)
+        paths, idxs = save_imgs_to(imgs, "upload", uploads_path)
         embs = self.transform(paths)
 
         for i, idx in enumerate(idxs):
@@ -79,9 +78,8 @@ class EmbeddingModel:
         def vectors_from_idxs(idxs):
             vectors = []
             for idx in idxs:
-                # Index for upload has UUID4 format
-                if not idx.isnumeric():
-                    vectors.append(uploads[idx][emb_type])
+                if idx.startswith("upload"):
+                    vectors.append(uploads[idx][emb_type]) # Uploaded file
                 else:
                     vectors.append(ann.get_item_vector(int(idx)))  # Indices are strings
                 return vectors

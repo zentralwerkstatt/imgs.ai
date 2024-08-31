@@ -51,7 +51,7 @@ def arrange_data(X, shuffle=0, max_data=0):
     return X
 
 
-def save_imgs_to(imgs, folder):    
+def save_imgs_to(imgs, prefix, folder):    
     new_dir(folder)
     paths = []
     idxs = []
@@ -64,8 +64,8 @@ def save_imgs_to(imgs, folder):
         else: # Data stream
             stream = BytesIO(img.read())
             img = PIL.Image.open(stream).convert("RGB")
-        idx = str(uuid4())
-        path = str(os.path.join(folder, f"{idx}.jpg"))
+        idx = f"{prefix}_{str(uuid4())}.jpg"
+        path = str(os.path.join(folder, idx))
         img.save(path)
         paths.append(path)
         idxs.append(idx)
