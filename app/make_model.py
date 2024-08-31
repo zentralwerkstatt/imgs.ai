@@ -1,6 +1,4 @@
-from train import make_model
-from app.embedders import Embedder_CLIP_ViT, Embedder_Poses, Embedder_Raw, Embedder_VGG19
-from app.util import new_dir, arrange_data
+from embedders import Embedder_CLIP_ViT, Embedder_Poses, Embedder_Raw, Embedder_VGG19
 from sklearn.decomposition import IncrementalPCA
 import csv
 from train import train
@@ -8,15 +6,21 @@ import os
 
 
 # Choose embedders and reducers, see train.py
+"""
 embedders = {
     "vgg19": Embedder_VGG19(reducer=IncrementalPCA(n_components=512)),
     "raw": Embedder_Raw(reducer=IncrementalPCA(n_components=512)),
     "clip_vit": Embedder_CLIP_ViT(),
     "poses": Embedder_Poses()
 }
-data_root = "data.csv" # CSV file or folder
-model_folder = "models/new_model" # Where to save the model
-max_data = None # Limit to max_data images (useful for testing purposes)
+"""
+embedders = {
+    "vgg19": Embedder_VGG19(reducer=IncrementalPCA(n_components=512)),
+    "clip_vit": Embedder_CLIP_ViT(),
+}
+data_root = "/data/dev.imgs.ai/ImageNet" # CSV file or folder
+model_folder = "../models/ImageNet" # Where to save the model
+max_data = 10000 # Limit to max_data images (useful for testing purposes)
 
 X = []
 

@@ -13,7 +13,7 @@ import dill as pickle # https://discuss.pytorch.org/t/cant-pickle-local-object-d
 import json
 from annoy import AnnoyIndex
 import logging
-from app.util import load_img, img_from_url, set_cuda
+from util import load_img, img_from_url, set_cuda
 
 
 # Logging
