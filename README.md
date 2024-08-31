@@ -23,4 +23,4 @@ We provide the Rijksmuseum dataset (embeddings only) for testing purposes. The d
 
 ## Local training (experimental)
 
-Please see the separate [imgs.ai-custom repository](https://github.com/zentralwerkstatt/imgs.ai-custom) to train your own dataset.
+Please see [make_model.py](make_model.py) to train your own model, GPU support strongly recommended.
