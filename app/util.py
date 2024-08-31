@@ -45,12 +45,6 @@ def img_from_url(url, max_tries=10):
         time.sleep(1)
 
 
-def arrange_data(X, shuffle=0, max_data=0):
-    if shuffle: random.shuffle(X)
-    if max_data: X = X[:max_data]
-    return X
-
-
 def save_imgs_to(imgs, prefix, folder):    
     new_dir(folder)
     paths = []
