@@ -37,7 +37,7 @@ else: # Not CSV
         for fname in files:
             X.append([os.path.relpath(os.path.join(root, fname), start=data_root), "", None])
     
-if max_data: X = X[:max_data-1]
+if max_data: X = X[:max_data]
 
 model_folder = f"{get_parent_dir(get_current_dir())}/models/{model_status}/{model_name}"
 new_dir(model_folder)
