@@ -1,4 +1,4 @@
-from app.util import from_device
+from util import from_device
 import numpy as np
 import PIL.Image
 import torch as t
