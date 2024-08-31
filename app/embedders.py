@@ -7,6 +7,10 @@ import torch.nn as nn
 import clip
 
 
+def from_device(tensor):
+    return tensor.detach().cpu().numpy()
+
+
 class Embedder_Raw:
 
     model = None

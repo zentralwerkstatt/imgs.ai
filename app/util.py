@@ -94,10 +94,6 @@ def sort_dict(d):
     return {k: v for k, v in sorted(d.items(), key=lambda item: item[1])}
 
 
-def from_device(tensor):
-    return tensor.detach().cpu().numpy()
-
-
 def new_dir(folder):
     os.makedirs(folder, exist_ok=True)
     return folder
