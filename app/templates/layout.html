@@ -40,17 +40,7 @@
 		{% endfor %}
 	{% endwith %}
 	{% from "bootstrap/form.html" import render_form, render_field %}
-	<div style="display:block; top:50%; right:50%; position:fixed; z-index: 999" class="spinner-border text-primary mx-auto" role="status" id="loading"></div>
-	<div style="opacity: .3" class="wrapper">{% block content %}{% endblock %}</div>
+	{% block content %}{% endblock %}
 </body>
-
-<script>
-	$(window).on('load', function(){
-		$(".wrapper").animate({
-			opacity: 1
-		});
-		$('#loading').hide()
-	})
-</script>
 
 </html>
