@@ -101,7 +101,7 @@ class Session:
         else:
             path = models[self.model].paths[idx]
             if path.startswith("http"): 
-                return None
+                return path
             else: # Local data
                 return os.path.join(Config.DATA_PATH, self.model, path)
             

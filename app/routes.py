@@ -87,12 +87,13 @@ def full(idx):
 @app.route("/source/<idx>")
 def source(idx):
     session = Session(flask_session)
-    _, metadata = session.get_data(idx)
-    url = metadata[1]
-    if url:
-        return redirect(url, code=302)
+    if not idx.startswith("upload"):
+        metadata = session.get_metadata(idx)
+        if metadata:
+            url = metadata[1]
+            return redirect(url, code=302)
     else:
-        return Response(status=204)
+        return Response(status=204) #TODO: use flash messages instead of failing silently
 
 
 @app.route("/interface", methods=["GET", "POST"])
