@@ -1,6 +1,7 @@
 import os
 from app.util import sample_range, CLIP_text, new_dir
 from app import app, models, log, Config
+from flask import url_for
 
 
 # Per-user state, deals with server-side models and serialization as client session
@@ -106,13 +107,13 @@ class Session:
             
     def get_url(self, idx):
         if idx.startswith("upload"): # Uploaded file
-            return f"{Config.DATA_URL}/{self.model}/{idx}"
+            return url_for("static", filename=f"data/{self.model}/{idx}")
         else:
             path = models[self.model].paths[idx]
             if path.startswith("http"):
                 return path
             else: # Local data
-                return f"{Config.DATA_URL}/{self.model}/{path}"
+                return url_for("static", filename=f"data/{self.model}/{idx}")
 
     def get_metadata(self, idx):
         return models[self.model].metadata[idx]

@@ -93,7 +93,8 @@ def source(idx):
             url = metadata[1]
             return redirect(url, code=302)
     else:
-        return Response(status=204) #TODO: use flash messages instead of failing silently
+        flash("No source available for selected image", 'info')
+        return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
 @app.route("/interface", methods=["GET", "POST"])
@@ -178,9 +179,4 @@ def interface():
     # Store in cookie
     session.store(flask_session)
 
-    return render_template(
-        "interface.html",
-        title="imgs.ai",
-        session=session,
-        Config=Config,
-    )
+    return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
