@@ -12,6 +12,7 @@ import random
 from flask import send_file
 from io import StringIO
 import clip
+import pathlib
 
 
 def set_cuda():
@@ -23,6 +24,14 @@ device = set_cuda()
 # print(clip.available_models())
 model_vit, _ = clip.load("ViT-B/32", device=device)
 model_rn, transforms_rn = clip.load("RN50", device=device)
+
+
+def get_current_dir():
+    return pathlib.Path(__file__).parent.absolute()
+
+
+def get_parent_dir(dir):
+    return pathlib.Path(dir).parent.absolute()
 
 
 def CLIP_text(text): # Use RN50 if not indicated otherwise
