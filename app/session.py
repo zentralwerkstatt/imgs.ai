@@ -113,7 +113,7 @@ class Session:
             if path.startswith("http"):
                 return path
             else: # Local data
-                return url_for("static", filename=f"data/{self.model}/{idx}")
+                return url_for("static", filename=f"data/{self.model}/{path}")
 
     def get_metadata(self, idx):
         return models[self.model].metadata[idx]

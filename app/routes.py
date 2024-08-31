@@ -81,17 +81,17 @@ def logout():
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)
+    # FIXME: if previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message", priority: low
     return redirect(session.get_url(idx), code=302)
 
 
 @app.route("/source/<idx>")
 def source(idx):
     session = Session(flask_session)
-    if not idx.startswith("upload"):
-        metadata = session.get_metadata(idx)
-        if metadata:
-            url = metadata[1]
-            return redirect(url, code=302)
+    # Metadata is guaranteed for all non-uploaded files
+    # See make_model in train.py
+    if not idx.startswith("upload") and session.get_metadata(idx)[1]: # Has filled URL field        
+        return redirect(session.get_metadata(idx)[1], code=302)
     else:
         flash("No source available for selected image", 'info')
         return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
