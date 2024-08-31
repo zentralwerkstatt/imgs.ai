@@ -1,7 +1,6 @@
 import os
 from app.util import sample_range, CLIP_text, new_dir
 from app import app, models, log, Config
-from flask import url_for, send_from_directory
 
 
 # Per-user state, deals with server-side models and serialization as client session
