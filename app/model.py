@@ -64,7 +64,8 @@ class EmbeddingModel:
         embs = h5py.File(embs_file, "r")
         return embs[emb_type]
 
-    def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, vector=None, mode="ranking", search_k=-1, limit=None):
+    # FIXME: enable model selection on interface for multiple positives
+    def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, vector=None, mode="ranking", search_k=-1):
         # Load neighborhood file
         hood_file = os.path.join(self.model_folder, f"{emb_type}_{metric}.ann")
         ann = AnnoyIndex(self.config["emb_types"][emb_type]["dims"], metric)

@@ -16,7 +16,7 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    return redirect(url_for("interface"))
+    return render_template("about.html")
 
 
 @app.route("/imprint")
@@ -81,7 +81,7 @@ def logout():
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)
-    # FIXME: if previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message", priority: low
+    # FIXME: if previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message"
     return redirect(session.get_url(idx), code=302)
 
 
@@ -153,6 +153,8 @@ def interface():
             session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
 
     # Determine if CLIP functions necessary
+    # FIXME: don't just remove CLIP prompt as that looks like undefined behavior on the interface
+    # TODO: CLIP prompts become "images" that can be kept, removed, or turned negative
     session.clip_prompt = ""
     search_target = f"idxs +{session.pos_idxs}, -{session.neg_idxs}"
     if session.emb_type.startswith("clip"):

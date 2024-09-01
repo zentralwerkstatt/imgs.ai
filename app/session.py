@@ -69,7 +69,7 @@ class Session:
 
     def get_nns(self):
         # If we have queries or CLIP prompt, search nearest neighbors, else display random data points
-        # (ignore negative only examples, as results will be random anyway)
+        # FIXME: cover negatives only scenario instead of ignoring
         if self.pos_idxs or (self.pos_idxs and self.neg_idxs) or self.clip_prompt:
             if self.clip_prompt:
                 vector=CLIP_text(self.clip_prompt)
