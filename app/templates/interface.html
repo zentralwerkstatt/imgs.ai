@@ -10,13 +10,6 @@
 <input hidden id="file" type="file" name="file" multiple onchange="$('.container').hide(); this.form.submit()" form="upload">
 
 <div class="container">
-	<div class="row">
-		<div class="col">
-			<b>imgs.ai</b> is a fast, dataset-agnostic, deep visual search engine for digital art history based on neural network embeddings. <i>imgs.ai</i> utilizes modern approximate k-NN algorithms via <a href="https://github.com/spotify/annoy">Spotify's Annoy library</a> to deliver fast search results even for very large datasets in low-resource environments, and integrates the <a href="https://openai.com/blog/clip/">OpenAI CLIP</a> model for text-based visual search. Try it below on the complete <a href="https://www.rijksmuseum.nl">Rijksmuseum</a> and <a href="https://www.metmuseum.org/">Metropolitan Museum of Art</a> collections (<a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>) or <a href="{{ url_for('signup') }}">sign up</a> for an account to access more functions/datasets (institutional email address and approval required.) imgs.ai is developed by <a href="https://zentralwerkstatt.org">Fabian Offert</a>, with contributions by Peter Bell and Oleg Harlamov. Get in touch at <a href="mailto:hi@imgs.ai">hi@imgs.ai</a>.
-		</div>
-	</div>
-
-	<hr>
 
 	<!-- Query Images -->
 	<div class="row">
@@ -149,7 +142,6 @@
 </div>
 
 <div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>
-
 
 <script src="{{ url_for('static', filename='node_modules/packery/dist/packery.pkgd.min.js') }}"></script>
 <script src="{{ url_for('static', filename='node_modules/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
