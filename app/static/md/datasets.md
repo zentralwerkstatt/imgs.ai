@@ -41,11 +41,18 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Source: [https://github.com/Smithsonian/OpenAccess](https://github.com/Smithsonian/OpenAccess)
 - Size: **136455**
 - Method: Public JSON
-- Year added: 2022
-- Completeness: 100% (no errors at time of scraping)
+- Year added: 2022/2024
+- Completeness: 100% (no errors at time of scraping)/99.9% (under 100 images failed)
 - Metadata: backlink to website
 - Type: remote (images pulled from server on demand)/local (hosted on imgs.ai)
 - Embeddings: VGG19, Poses, Raw, CLIP
+
+**Smithsonian_Local**
+
+- Local copy of Smithsonian
+- Year added: 2024
+- Completeness: 99.9% (under 100 images failed)
+- Type: local (hosted on imgs.ai)
 
 **ImageNet**
 
