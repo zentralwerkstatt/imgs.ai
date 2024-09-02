@@ -36,7 +36,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
-**Smithsonian**
+**Smithsonian**/**Smithsonian_Local**
 
 - Source: [https://github.com/Smithsonian/OpenAccess](https://github.com/Smithsonian/OpenAccess)
 - Size: **136455**
@@ -44,7 +44,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Year added: 2022
 - Completeness: 100% (no errors at time of scraping)
 - Metadata: backlink to website
-- Type: remote (images pulled from server on demand)
+- Type: remote (images pulled from server on demand)/local (hosted on imgs.ai)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
 **ImageNet**
