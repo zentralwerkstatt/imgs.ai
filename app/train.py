@@ -48,8 +48,8 @@ def collect_embed(X, embedders, data_root, num_workers, embs_file, start, end):
         del embs["valid_idxs"]
 
     # Set up threading
-    pbar_success = tqdm(total=(end-start)+1, desc="Embedded")
-    pbar_failure = tqdm(total=(end-start)+1, desc="Failed")
+    pbar_success = tqdm(total=(end-start), desc="Embedded")
+    pbar_failure = tqdm(total=(end-start), desc="Failed")
     q = Queue()
     l = Lock()
     
