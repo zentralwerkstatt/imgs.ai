@@ -103,7 +103,6 @@ def train(X, model_folder, embedders, data_root, num_workers=32, start=0, end=No
     # Set up
     log.info(f'Setting up config')
     config = {}
-    config["data_root"] = data_root
 
     # Create or load raw embeddings
     embs_file = os.path.join(model_folder, "embeddings.hdf5")
