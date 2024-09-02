@@ -16,7 +16,6 @@ embedders = {
 }
 """
 embedders = {
-    "vgg19": Embedder_VGG19(reducer=IncrementalPCA(n_components=512)),
     "clip_vit": Embedder_CLIP_ViT(),
 }
 data_root = "/data/dev.imgs.ai/ImageNet" # CSV file or folder
