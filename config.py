@@ -4,7 +4,7 @@ import pathlib
 class Config(object):
     SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(32)
 
-    current_dir = pathlib.Path(__file__).parent.absolute() # TODO: os.path alternative
+    current_dir = pathlib.Path(__file__).parent.absolute()
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{current_dir}/users.db"  # Absolute
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

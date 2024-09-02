@@ -7,21 +7,22 @@ from app.user import User, create_user
 from app.session import Session
 from app import Config
 import time
+import os
+from markdown import markdown
+
+
+def from_md(fname):
+    if not fname.endswith(".md"):
+        fname+=".md"
+    path = os.path.join(app.root_path, app.static_folder, "md", fname)
+    with open(path, "r") as f:
+        md = markdown(f.read())
+    return render_template("md.html", title="imgs.ai", Config=Config, md=md)
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-
-@app.route("/")
-def index():
-    return render_template("about.html")
-
-
-@app.route("/imprint")
-def imprint():
-    return render_template("imprint.html")
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -77,6 +78,21 @@ def logout():
     flask_session.clear()
     return redirect(url_for("index"))
 
+
+@app.route("/")
+def index():
+    return from_md("about")
+
+
+@app.route("/imprint")
+def imprint():
+    return from_md("imprint")
+
+
+@app.route("/datasets")
+def datasets():
+    return from_md("datasets")
+    
 
 @app.route("/full/<idx>")
 def full(idx):
