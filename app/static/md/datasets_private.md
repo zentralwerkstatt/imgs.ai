@@ -66,7 +66,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Method: Kaggle download
 - Details: `kaggle competitions download -c imagenet-object-localization-challenge`
 - Year added: 2024
-- Completeness: 100% (as far as Kaggle dataset is complete)
+- Completeness: 92% (8% non-readable images)
 - Metadata: none
 - Type: (hosted on imgs.ai)
 - Embeddings: CLIP
