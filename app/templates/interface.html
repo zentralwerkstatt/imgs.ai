@@ -65,9 +65,9 @@
 				</div>
 				<div class="form-group mr-2">
 					{% if session.public %}
-					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Upload" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
+					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
 					{% else %}
-					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8597;" form="actions"
+					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" form="actions"
 					onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
 					{% endif %}
 					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
