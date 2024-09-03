@@ -39,19 +39,6 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
-**ImageNet**
-
-- Source: [https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge) – this is the ILSVRC 2012 version!
-- Size: **1322677**
-- License: publicly accessible
-- Method: Kaggle download
-- Details: `kaggle competitions download -c imagenet-object-localization-challenge`
-- Year added: 2024
-- Completeness: 92% (8% non-readable images)
-- Metadata: none
-- Type: (hosted on imgs.ai)
-- Embeddings: CLIP
-
 **Getty**
 
 - Source: [https://www.getty.edu/projects/open-content-program/](https://www.getty.edu/projects/open-content-program/)
