@@ -50,7 +50,6 @@ class Session:
         self.public = flask_session["public"]
 
     def load_model(self, model, pin_idxs=None):
-        log.info(f"Activating {model}")
         files = []
         if pin_idxs:
             for idx in pin_idxs:

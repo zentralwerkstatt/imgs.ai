@@ -15,19 +15,15 @@ import importlib
 logging.captureWarnings(True)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(f"logs/{date.today()}.log")
-console_handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(name)s : %(message)s")
+file_handler = logging.FileHandler(f"app/static/logs/app.log")
+formatter = logging.Formatter("%(asctime)s : %(message)s", "[%d/%b/%Y:%H:%M:%S %z]")
 file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
 log.addHandler(file_handler)
-log.addHandler(console_handler)
 
 config_file = os.getenv('IMGS_CONFIG')
 log.info(f'Using config: {config_file}')
 config_module = importlib.import_module(config_file, package=None)
 Config = config_module.Config
-log.info(f'Secret key: {Config.SECRET_KEY}')
 
 # Start app
 app = Flask(__name__)

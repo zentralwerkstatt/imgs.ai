@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, request, url_for, Response
+from flask import render_template, flash, redirect, request, url_for, abort
 from flask import session as flask_session
 from flask_login import current_user, login_user, logout_user, login_required
 from app.forms import SignupForm, LoginForm
@@ -64,12 +64,38 @@ def login():
 @app.route("/users", methods=["GET", "POST"])
 @login_required
 def users():
-    if request.method == "POST":
-        for i, access in request.form.items():
-            user = User.query.get(int(i))
-            user.access = bool(int(access))
-            db.session.commit()
-    return render_template("users.html", title="imgs.ai", Config=Config, users=User.query.all(),)
+    if current_user.id==1: # Admin
+        if request.method == "POST":
+            for i, access in request.form.items():
+                user = User.query.get(int(i))
+                user.access = bool(int(access))
+                db.session.commit()
+        return render_template("users.html", title="imgs.ai", Config=Config, users=User.query.all(),)
+    else:
+        abort(403)
+
+
+@app.route("/logs/<log>")
+@login_required
+def logs(log):
+    if current_user.id==1: # Admin
+
+        def to_md(lines):
+            lines.reverse()
+            md = "```\n" + "".join(lines) + "```"
+            return markdown(md, extensions=['fenced_code', 'codehilite'])
+
+        if log=="app":
+            with(open("app/static/logs/app.log", "r")) as f:
+                return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))
+        elif log=="acc":
+            with(open("app/static/logs/acc.log", "r")) as f:
+                return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))
+        else:
+            abort(404)
+    
+    else:
+        abort(403)
 
 
 @app.route("/logout")
@@ -192,16 +218,10 @@ def interface():
     start = time.process_time()
     session.get_nns()
 
-
     # Logging
-    # See https://github.com/mattupstate/flask-security/blob/4049c0620383f42d37950c7a35af5ddd6df0540f/flask_security/utils.py#L65
-    if 'X-Forwarded-For' in request.headers:
-        remote_addr = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
-    else:
-        remote_addr = request.remote_addr or 'untrackable'
-
+    score = round(time.process_time() - start, 3)
     log.info(
-        f"Search by {remote_addr} for {search_target} in {session.model} completed in {time.process_time() - start}, returning {len(session.res_idxs)} results"
+        f"{current_user} searched for {search_target} in {session.model}, completed in {score}s, returning {len(session.res_idxs)} results"
     )
 
     # Store in cookie
