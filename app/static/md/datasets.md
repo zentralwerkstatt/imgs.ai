@@ -29,7 +29,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Source: [https://www.kaggle.com/metmuseum/the-met](https://www.kaggle.com/metmuseum/the-met)
 - Size: **358426**
 - License: [CC0](https://creativecommons.org/publicdomain/zero/1.0/), see [https://www.metmuseum.org/about-the-met/policies-and-documents/open-access](https://www.metmuseum.org/about-the-met/policies-and-documents/open-access)
-- Method: BigQuery, see https://cloud.google.com/bigquery/docs/quickstarts/quickstart-cloud-console
+- Method: BigQuery, see [https://cloud.google.com/bigquery/docs/quickstarts/quickstart-cloud-console](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-cloud-console)
 - Details:
     - `SELECT bigquery-public-data.the_met.images.original_image_url, bigquery-public-data.the_met.objects.link_resource`
     - `FROM bigquery-public-data.the_met.objects JOIN bigquery-public-data.the_met.images ON bigquery-public-data.the_met.objects.object_id = bigquery-public-data.the_met.images.object_id`
