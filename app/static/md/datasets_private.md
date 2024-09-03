@@ -34,7 +34,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
     - `SELECT bigquery-public-data.the_met.images.original_image_url, bigquery-public-data.the_met.objects.link_resource`
     - `FROM bigquery-public-data.the_met.objects JOIN bigquery-public-data.the_met.images ON bigquery-public-data.the_met.objects.object_id = bigquery-public-data.the_met.images.object_id`
 - Year added: 2021
-- Completeness: 100% (no errors at time of query)
+- Completeness: 99% (no errors at time of scraping, some files moved in the meantime)
 - Metadata: backlink to website
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
@@ -46,7 +46,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - License: [CC0](https://creativecommons.org/publicdomain/zero/1.0/), see [https://www.si.edu/openaccess/faq](https://www.si.edu/openaccess/faq)
 - Method: Public JSON
 - Year added: 2022
-- Completeness: 100% (no errors at time of scraping)
+- Completeness: 99% (no errors at time of scraping, some files moved in the meantime)
 - Metadata: backlink to website
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP

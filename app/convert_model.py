@@ -10,15 +10,15 @@ from util import img_from_url, new_dir
 import pathlib
 
 
-old_model = "public/Rijksmuseum" # Name of the existing model
-new_model = "private/Rijksmuseum_Local" # Name of the local copy
+old_model = "public/Smithsonian" # Name of the existing model
+new_model = "private/Smithsonian_Local" # Name of the local copy
+model_dir = f"/data/models"  # Absolute, storage for models
 num_workers = 32
-max_data = 100 # Limit to max_data images (useful for testing purposes)
+max_data = None # Limit to max_data images (useful for testing purposes)
 resize = 640
 
 new_model_name = new_model.split("/")[-1]
 grandparent_dir = pathlib.Path(__file__).resolve(strict=True).parents[1]
-model_dir = f"{grandparent_dir}/models"
 new_model_data_root = f"{grandparent_dir}/app/static/data/{new_model_name}" # Where to download files to
 
 print(f"Converting {model_dir}/{old_model} to {model_dir}/{new_model}")
