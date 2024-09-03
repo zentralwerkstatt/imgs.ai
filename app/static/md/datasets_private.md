@@ -51,17 +51,10 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
-**Smithsonian_Local**
-
-- Local copy of Smithsonian
-- Year added: 2024
-- Completeness: 99.9% (under 100 images failed)
-- Type: local (hosted on imgs.ai)
-
 **ImageNet**
 
 - Source: [https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge) – this is the ILSVRC 2012 version!
-- Size: **1431168**
+- Size: **1322677**
 - License: publicly accessible
 - Method: Kaggle download
 - Details: `kaggle competitions download -c imagenet-object-localization-challenge`
