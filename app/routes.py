@@ -140,7 +140,7 @@ def source(idx):
         return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
-# TODO: better controls UI
+# TODO: make context menu responsive or replace with popover
 # TODO: help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
