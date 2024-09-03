@@ -20,6 +20,15 @@
 				{% for idx in session.pos_idxs %}
 				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item pos">
 					<img style="width:100%" class="grid-item-img pos" src="{{ session.get_url(idx) }}" value="{{ idx }}" />
+					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-body justify-content-center">
+									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 				{% endfor %}
 			</div>
@@ -32,6 +41,15 @@
 				{% for idx in session.neg_idxs %}
 				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item neg">
 					<img style="width:100%" class="grid-item-img neg" src="{{ session.get_url(idx) }}" value="{{ idx }}"/>
+					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-body justify-content-center">
+									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 				{% endfor %}
 			</div>
@@ -138,8 +156,17 @@
 		<div class="col">
 			<div class="grid res">
 				{% for idx in session.res_idxs %}
-				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item res" data-toggle="tooltip" data-placement="top" title="Left click to select, right click for options">
+				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item res" data-toggle="tooltip" data-placement="top" title="Left click to select, double click to enlarge/go to source website">
 					<img style="width: 100%" class="grid-item-img res" src="{{ session.get_url(idx) }}" value="{{ idx }}" id="{{ idx }}" />				
+					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-body justify-content-center">
+									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 				{% endfor %}
 			</div>
@@ -147,14 +174,16 @@
 	</div>
 </div>
 
-<div class="dropdown-menu dropdown-menu-sm" id="context-menu"></div>
-
 <script src="{{ url_for('static', filename='node_modules/packery/dist/packery.pkgd.min.js') }}"></script>
 <script src="{{ url_for('static', filename='node_modules/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
 <script>	
 		
 	$(".grid-item-img").on("click", function (event) {
 		$(this).toggleClass("active");
+	});
+
+	$(".grid-item").on("dblclick", function (event) {
+		$(this).find(".modal").modal('toggle');
 	});
 	
 	function return_active(select) {
@@ -168,31 +197,6 @@
 			}
 		});
 	};
-
-	$('.grid-item-img').on('contextmenu', function(event) {
-  		var top = event.pageY;
-  		var left = event.pageX;
-		var idx = $(this).attr('value');
-		
-		$("#context-menu").html("")
-		$("#context-menu").append(`<a class="dropdown-item" href="/full/${idx}">Full-size image</a>`);
-		$("#context-menu").append(`<a class="dropdown-item" href="/source/${idx}">Source URL</a>`);  		
-		$("#context-menu").css({
-    		display: "block",
-    		top: top,
-    		left: left
-  		}).addClass("show");
-  		return false; //blocks default
-	}).on("click", function() {
-  		$("#context-menu").removeClass("show").hide();
-	});
-	$("#context-menu a").on("click", function() {
-		$(this).parent().removeClass("show").hide();
-	});
-
-	$(document).bind("click", function(event) {
-    	$("#context-menu").removeClass("show").hide();
-	});
 
 	var $grid_pos = $(".grid.pos").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.pos", gutter: 0});
 	$grid_pos.imagesLoaded().progress(function () {

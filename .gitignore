@@ -1,9 +1,11 @@
 config_server.py
 .DS_Store
 users.db
+*.xlsx
 .ipynb_checkpoints/
 __pycache__/
 .vscode/
+scrapers/
 app/static/node_modules/
 app/static/*.jpg
 !app/static/social.jpg
