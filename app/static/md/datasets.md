@@ -58,9 +58,9 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Completeness: 99.9% (under 100 images failed)
 - Type: local (hosted on imgs.ai)
 
-**ImageNet (ILSVRC 2012)**
+**ImageNet**
 
-- Source: [https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge)
+- Source: [https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge) – this is the ILSVRC 2012 version!
 - Size: **1431168**
 - License: publicly accessible
 - Method: Kaggle download
