@@ -12,18 +12,6 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
-**Museum of Modern Art (MoMA)**
-
-- Source: [https://www.moma.org/collection/](https://www.moma.org/collection/)
-- Size: **72365**
-- Method: Brute-force scraping (now restricted)
-- License: publicly accessible, no download
-- Year added: 2020
-- Completeness: ca. 75% (good approximation of collection)
-- Metadata: backlink to website
-- Type: remote (images pulled from server on demand)
-- Embeddings: VGG19, Poses, Raw, CLIP
-
 **Metropolitan Museum (Met)**
 
 - Source: [https://www.kaggle.com/metmuseum/the-met](https://www.kaggle.com/metmuseum/the-met)
@@ -45,10 +33,10 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Size: **136455**
 - License: [CC0](https://creativecommons.org/publicdomain/zero/1.0/), see [https://www.si.edu/openaccess/faq](https://www.si.edu/openaccess/faq)
 - Method: Public JSON
-- Year added: 2022/2024
-- Completeness: 100% (no errors at time of scraping)/99.9% (under 100 images failed)
+- Year added: 2022
+- Completeness: 100% (no errors at time of scraping)
 - Metadata: backlink to website
-- Type: remote (images pulled from server on demand)/local (hosted on imgs.ai)
+- Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
 **Smithsonian_Local**

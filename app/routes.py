@@ -89,9 +89,15 @@ def imprint():
     return from_md("imprint")
 
 
-@app.route("/datasets")
-def datasets():
-    return from_md("datasets")
+@app.route("/datasets_public")
+def datasets_public():
+    return from_md("datasets_public")
+
+
+@app.route("/datasets_private")
+@login_required
+def datasets_private():
+    return from_md("datasets_private")
     
 
 @app.route("/full/<idx>")
