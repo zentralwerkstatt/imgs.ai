@@ -51,6 +51,9 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
 
+**Smithsonian_Local**
+- Local mirror of the Smithsonian dataset
+
 **ImageNet**
 
 - Source: [https://www.kaggle.com/c/imagenet-object-localization-challenge](https://www.kaggle.com/c/imagenet-object-localization-challenge) – this is the ILSVRC 2012 version!
