@@ -40,6 +40,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
 - Embeddings: VGG19, Poses, Raw, CLIP
 
 **Smithsonian_Local**
+
 - Local mirror of the Smithsonian dataset
 
 **ImageNet**
