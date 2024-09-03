@@ -119,6 +119,8 @@ def source(idx):
         return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
+# TODO: better controls UI
+# TODO: help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
     # Load from cookie
