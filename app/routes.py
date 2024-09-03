@@ -40,6 +40,7 @@ def signup():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    flash("Please note: if you signed up before September 2024 your login data has expired and you will be required to sign up again. Please check back after October 2024 for additional instructions.", "info")
     session = Session(flask_session)
     if current_user.is_authenticated:
         return redirect(url_for("interface"))
@@ -100,6 +101,7 @@ def datasets_private():
     return from_md("datasets_private")
     
 
+# TODO: implement image lightbox with Bootstrap modal, see https://getbootstrap.com/docs/5.0/components/modal/
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)

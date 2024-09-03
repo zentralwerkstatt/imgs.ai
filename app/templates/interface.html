@@ -18,7 +18,7 @@
 			<div>Positive:</div>
 			<div class="grid pos">
 				{% for idx in session.pos_idxs %}
-				<div style="max-width: {{ session.size }}px" class="grid-item pos">
+				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item pos">
 					<img style="width:100%" class="grid-item-img pos" src="{{ session.get_url(idx) }}" value="{{ idx }}" />
 				</div>
 				{% endfor %}
@@ -30,7 +30,7 @@
 			<div>Negative:</div>
 			<div class="grid neg">
 				{% for idx in session.neg_idxs %}
-				<div style="max-width: {{ session.size }}px" class="grid-item neg">
+				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item neg">
 					<img style="width:100%" class="grid-item-img neg" src="{{ session.get_url(idx) }}" value="{{ idx }}"/>
 				</div>
 				{% endfor %}
@@ -39,12 +39,16 @@
 		{% endif %}
 	</div>
 
-	<hr>
+	<div class="row">
+		<div class="col">
+			<hr>
+		</div>
+	</div>
 
 	<!-- Controls -->
 	<div class="row">
 		<div class="col">
-			<div class="form-inline">
+			<div class="form-inline justify-content-center">
 				<div class="form-group mr-2">
 					<label class="mt-2 mb-2 mr-2">Searching&nbsp;<span class="badge badge-primary">{{ session.model_len }}</span>&nbsp;images in</label>
 					<select class="custom-select mt-2 mb-2 mr-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
@@ -63,16 +67,25 @@
 					{% if session.public %}
 					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Upload" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
 					{% else %}
-					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Upload" form="actions"
+					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8597;" form="actions"
 					onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
 					{% endif %}
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Positive" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Negative" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
+					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
 					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
 					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
 				</div>
+				{% if session.emb_type.startswith("clip"): %}
+				<div class="form-group mr-2">
+					<input type="text" class="form-control" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
+				</div>	
+				{% endif %}
+				<div class="form-group mr-2">
+					<a class="btn btn-light mt-2 mb-2 mr-2 more-toggle" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
+				</div>
 			</div>
-			<div class="form-inline">
+			<div class="collapse" id="advanced">
+			<div class="form-inline justify-content-center">
 				<div class="form-group mr-2">
 					<label class="mt-2 mb-2 mr-2">Embedding</label>
 					<select class="custom-select mt-2 mb-2 mr-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
@@ -91,11 +104,7 @@
 				</div>
 				<div class="form-group mr-2">
 					<label class="mt-2 mb-2 mr-2">Size</label>
-					{% if session.public %}
-					<select class="custom-select" name="size" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
-					{% else %}
 					<select class="custom-select" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
-					{% endif %}
 						{% for size in Config.SIZES %}
 						<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
 						{% endfor %}
@@ -113,27 +122,24 @@
 						{% endfor %}
 					</select>
 				</div>
-				{% if session.emb_type.startswith("clip"): %}
-				<div class="form-inline">
-					<div class="form-group mr-2">
-						<label class="mt-2 mb-2 mr-2">Prompt</label>
-						<input type="text" class="form-control" name="clip_prompt" placeholder="Press return" form=actions>
-					</div>	
-				</div>	
-				{% endif %}
+			</div>
 			</div>
 		</div>
 	</div>
 
-	<hr>
+	<div class="row">
+		<div class="col">
+			<hr>
+		</div>
+	</div>
 
 	<!-- Search results -->
 	<div class="row">
 		<div class="col">
 			<div class="grid res">
 				{% for idx in session.res_idxs %}
-				<div style="max-width: {{ session.size }}px" class="grid-item res">
-					<img style="max-width: 100%" class="grid-item-img res" src="{{ session.get_url(idx) }}" value="{{ idx }}" id="{{ idx }}" />				
+				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item res" data-toggle="tooltip" data-placement="top" title="Left click to select, right click for options">
+					<img style="width: 100%" class="grid-item-img res" src="{{ session.get_url(idx) }}" value="{{ idx }}" id="{{ idx }}" />				
 				</div>
 				{% endfor %}
 			</div>
@@ -188,17 +194,17 @@
     	$("#context-menu").removeClass("show").hide();
 	});
 
-	var $grid_pos = $(".grid.pos").packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.pos", gutter: 3});
+	var $grid_pos = $(".grid.pos").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.pos", gutter: 0});
 	$grid_pos.imagesLoaded().progress(function () {
 		$grid_pos.packery("layout");
 	});
 	
-	var $grid_neg = $(".grid.neg").packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.neg", gutter: 3});
+	var $grid_neg = $(".grid.neg").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.neg", gutter: 0});
 	$grid_neg.imagesLoaded().progress(function () {
 		$grid_neg.packery("layout");
 	});
 	
-	var $grid_res = $(".grid.res").packery({columnWidth: {{session.size}}, itemSelector: ".grid-item.res", gutter: 3});
+	var $grid_res = $(".grid.res").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.res", gutter: 0});
 	$grid_res.imagesLoaded().progress(function () {
 		$grid_res.packery("layout");
 	});

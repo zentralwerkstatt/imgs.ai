@@ -16,7 +16,8 @@ class Session:
         if "model" in flask_session:
             self.restore(flask_session)
         else:
-            self.load_model("Rijksmuseum") # Best-loading dataset
+            self.load_model(Config.DEFAULT_MODEL)
+            self.emb_type = Config.DEFAULT_EMB_TYPE
 
     def store(self, flask_session):
         flask_session["model"] = self.model
@@ -58,7 +59,7 @@ class Session:
         self.model = model
         self.model_len = models[self.model].config["model_len"]
         self.emb_types = list(models[self.model].config["emb_types"].keys())
-        self.emb_type = self.emb_types[0]
+        self.emb_type = Config.DEFAULT_EMB_TYPE
         self.metrics = models[self.model].config["emb_types"][self.emb_type]["metrics"]
         self.metric = self.metrics[0]
         self.res_idxs = []
