@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, request, url_for, abort
 from flask import session as flask_session
-from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user, login_user, logout_user, login_required, AnonymousUserMixin
 from app.forms import SignupForm, LoginForm
 from app import app, log, db, login_manager, models
 from app.user import User, create_user
@@ -75,25 +75,18 @@ def users():
         abort(403)
 
 
-@app.route("/logs/<log>")
+@app.route("/logs")
 @login_required
-def logs(log):
+def logs():
     if current_user.id==1: # Admin
 
         def to_md(lines):
             lines.reverse()
             md = "```\n" + "".join(lines) + "```"
             return markdown(md, extensions=['fenced_code', 'codehilite'])
-
-        if log=="app":
-            with(open("app/static/logs/app.log", "r")) as f:
-                return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))
-        elif log=="acc":
-            with(open("app/static/logs/acc.log", "r")) as f:
-                return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))
-        else:
-            abort(404)
-    
+        
+        with(open("app/static/log.log", "r")) as f:
+            return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))    
     else:
         abort(403)
 
@@ -218,10 +211,18 @@ def interface():
     start = time.process_time()
     session.get_nns()
 
-    # Logging
+    # See https://github.com/mattupstate/flask-security/blob/4049c0620383f42d37950c7a35af5ddd6df0540f/flask_security/utils.py#L65
+    if 'X-Forwarded-For' in request.headers:
+        ip = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+    else:
+        ip = request.remote_addr or 'untrackable'
     score = round(time.process_time() - start, 3)
+    if isinstance(current_user, AnonymousUserMixin):
+        user = "Anonymous"
+    else:
+        user = current_user
     log.info(
-        f"{current_user} searched for {search_target} in {session.model}, completed in {score}s, returning {len(session.res_idxs)} results"
+        f"{ip} {user} searched for {search_target} in {session.model}, completed in {score}s, returning {len(session.res_idxs)} results"
     )
 
     # Store in cookie

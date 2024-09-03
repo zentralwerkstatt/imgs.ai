@@ -15,7 +15,7 @@ import importlib
 logging.captureWarnings(True)
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(f"app/static/logs/app.log")
+file_handler = logging.FileHandler(f"app/static/log.log")
 formatter = logging.Formatter("%(asctime)s : %(message)s", "[%d/%b/%Y:%H:%M:%S %z]")
 file_handler.setFormatter(formatter)
 log.addHandler(file_handler)
