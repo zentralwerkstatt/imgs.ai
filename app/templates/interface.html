@@ -74,9 +74,9 @@
 		<div class="col">
 			<div class="card">
 				<div class="form-inline justify-content-center">
-					<div class="form-group mr-2">
-						<label></span><span class="badge badge-primary mt-2 mb-2 mr-2">{{ session.model_len }}</span><span class="mt-2 mb-2 mr-2">images in</span></label>
-						<select class="custom-select mt-2 mb-2 mr-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
+					<div class="form-group">
+						<label class="d-none d-md-block"></span><span class="badge badge-primary mx-1 my-2">{{ session.model_len }}</span><span class="mx-1 my-1">images in</span></label>
+						<select class="custom-select mx-1 my-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
 							{% if session.public %}
 							{% for model in Config.MODEL_NAMES_PUBLIC %}
 							<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
@@ -88,59 +88,59 @@
 							{% endif %}
 						</select>
 					</div>
-					<div class="form-group mr-2">
+					<div class="form-group">
 						{% if session.public %}
-						<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
+						<input type="button" class="btn btn-light mx-1 my-2" name="btn" value="&uarr;" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
 						{% else %}
-						<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" form="actions"
+						<input type="button" class="btn btn-light mx-1 my-2" name="btn" value="&uarr;" form="actions"
 						onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
 						{% endif %}
-						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
-						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
-						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
-						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
+						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
+						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
+						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
+						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
 					</div>
 					{% if session.emb_type.startswith("clip"): %}
-					<div class="form-group mr-2">
-						<input type="text" class="form-control mt-2 mb-2 mr-2" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
+					<div class="form-group">
+						<input type="text" class="form-control mx-1 my-2" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
 					</div>	
 					{% endif %}
 					<div class="form-group">
-						<a class="btn btn-light mt-2 mb-2 more-toggle" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
+						<a class="btn btn-light mx-1 my-2 more-toggle d-none d-md-block" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
 					</div>
 				</div>
 				<div class="collapse" id="advanced">
 					<div class="form-inline justify-content-center">
-						<div class="form-group mr-2">
-							<label class="mt-2 mb-2 mr-2">Embedding</label>
-							<select class="custom-select mt-2 mb-2 mr-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
+						<div class="form-group">
+							<label class="mx-1 my-2">Embedding</label>
+							<select class="custom-select mx-1 my-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
 								{% for emb_type in session.emb_types %}
 								<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
 								{% endfor %}
 							</select>
 						</div>
-						<div class="form-group mr-2">
-							<label class="mt-2 mb-2 mr-2">Distance</label>
-							<select class="custom-select mt-2 mb-2 mr-2" name="metric" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select distance metric">
+						<div class="form-group">
+							<label class="mx-1 my-2">Distance</label>
+							<select class="custom-select mx-1 my-2" name="metric" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select distance metric">
 								{% for metric in session.metrics %}
 								<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
 								{% endfor %}
 							</select>
 						</div>
-						<div class="form-group mr-2">
-							<label class="mt-2 mb-2 mr-2">Size</label>
-							<select class="custom-select mt-2 mb-2 mr-2" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
+						<div class="form-group">
+							<label class="mx-1 my-2">Size</label>
+							<select class="custom-select mx-1 my-2" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
 								{% for size in Config.SIZES %}
 								<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
 								{% endfor %}
 							</select>
 						</div>
 						<div class="form-group">
-							<label class="mt-2 mb-2 mr-2">Neighbors</label>
+							<label class="mx-1 my-2">Neighbors</label>
 							{% if session.public %}
-							<select class="custom-select mt-2 mb-2 mr-2" name="n" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
+							<select class="custom-select mx-1 my-2" name="n" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
 							{% else %}
-							<select class="custom-select mt-2 mb-2" name="n" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select number of nearest neighbors to display in result lightbox">
+							<select class="custom-select mx-1 my-2" name="n" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select number of nearest neighbors to display in result lightbox">
 							{% endif %}						
 							{% for n in Config.NS %}
 								<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
