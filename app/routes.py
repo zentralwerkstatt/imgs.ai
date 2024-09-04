@@ -139,7 +139,7 @@ def source(idx):
         return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
-# FIXME: CORS errors for MoMA and Metropolitan despite flask-cors – WTF?
+# FIXME: CORS errors because servers do not always send access-control-allow-origin headers (mostly MoMA), potential solution: local dataset
 # TODO: help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():

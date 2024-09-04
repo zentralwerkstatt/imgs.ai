@@ -22,7 +22,7 @@ In total, close to **2.5 million images** have been indexed so far, with new dat
     - `SELECT bigquery-public-data.the_met.images.original_image_url, bigquery-public-data.the_met.objects.link_resource`
     - `FROM bigquery-public-data.the_met.objects JOIN bigquery-public-data.the_met.images ON bigquery-public-data.the_met.objects.object_id = bigquery-public-data.the_met.images.object_id`
 - Year added: 2021
-- Completeness: 99% (no errors at time of scraping, some files moved in the meantime)
+- Completeness: 99% (no errors at time of scraping, some URLs dead now)
 - Metadata: backlink to website
 - Type: remote (images pulled from server on demand)
 - Embeddings: VGG19, Poses, Raw, CLIP
