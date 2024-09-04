@@ -30,7 +30,6 @@
 </head>
 
 <body>
-	{% include "navbar.html" %}
 	{% with messages = get_flashed_messages(with_categories=1) %}
 		{% for category, message in messages %}
 			<div class="alert alert-{{category}}">
@@ -39,6 +38,7 @@
 			</div>
 		{% endfor %}
 	{% endwith %}
+	{% include "navbar.html" %}
 	{% from "bootstrap/form.html" import render_form, render_field %}
 	{% block content %}{% endblock %}
 </body>

@@ -6,17 +6,4 @@
   height: auto;
 }
 
-.logo {
-  max-height: 40px;
-}
-
-.container{
-  margin-top: 50px;
-}
-
-table {
-  table-layout:fixed;
-  width:100%;
-}
-
 .grid-item-img.active {border-color: #007bff;}

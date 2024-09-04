@@ -14,140 +14,142 @@
 	<!-- Query Images -->
 	<div class="row">
 		{% if session.pos_idxs %}
-		<div class="col">
-			<div>Positive:</div>
-			<div class="grid pos">
-				{% for idx in session.pos_idxs %}
-				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item pos">
-					<img style="width:100%" class="grid-item-img pos" src="{{ session.get_url(idx) }}" value="{{ idx }}" />
-					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-body justify-content-center">
-									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+		<div class="col align-items-stretch">
+			<div class="card">
+				<div class="card-header text-center">
+					Positive
+				</div>
+				<div class="card-body">
+					<div class="grid pos">
+						{% for idx in session.pos_idxs %}
+						<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item pos">
+							<img style="width:100%" class="grid-item-img pos" src="{{ session.get_url(idx) }}" value="{{ idx }}" />
+							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-body justify-content-center">
+											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
+						{% endfor %}
 					</div>
 				</div>
-				{% endfor %}
 			</div>
 		</div>
 		{% endif %}
 		{% if session.neg_idxs %}
-		<div class="col">
-			<div>Negative:</div>
-			<div class="grid neg">
-				{% for idx in session.neg_idxs %}
-				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item neg">
-					<img style="width:100%" class="grid-item-img neg" src="{{ session.get_url(idx) }}" value="{{ idx }}"/>
-					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-body justify-content-center">
-									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+		<div class="col align-items-stretch">
+			<div class="card">
+				<div class="card-header text-center">
+					Negative
+				</div>
+				<div class="card-body">
+					<div class="grid neg">
+						{% for idx in session.neg_idxs %}
+						<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item neg">
+							<img style="width:100%" class="grid-item-img neg" src="{{ session.get_url(idx) }}" value="{{ idx }}"/>
+							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-body justify-content-center">
+											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
+						{% endfor %}
 					</div>
 				</div>
-				{% endfor %}
 			</div>
 		</div>
 		{% endif %}
 	</div>
 
-	<div class="row">
-		<div class="col">
-			<hr>
-		</div>
-	</div>
-
 	<!-- Controls -->
-	<div class="row">
+	<div class="row my-3"> <!-- Top and bottom spacer -->
 		<div class="col">
-			<div class="form-inline justify-content-center">
-				<div class="form-group mr-2">
-					<label class="mt-2 mb-2 mr-2">Searching&nbsp;<span class="badge badge-primary">{{ session.model_len }}</span>&nbsp;images in</label>
-					<select class="custom-select mt-2 mb-2 mr-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
+			<div class="card">
+				<div class="form-inline justify-content-center">
+					<div class="form-group mr-2">
+						<label></span><span class="badge badge-primary mt-2 mb-2 mr-2">{{ session.model_len }}</span><span class="mt-2 mb-2 mr-2">images in</span></label>
+						<select class="custom-select mt-2 mb-2 mr-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
+							{% if session.public %}
+							{% for model in Config.MODEL_NAMES_PUBLIC %}
+							<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+							{% endfor %}
+							{% else %}
+							{% for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC %}
+							<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+							{% endfor %}
+							{% endif %}
+						</select>
+					</div>
+					<div class="form-group mr-2">
 						{% if session.public %}
-						{% for model in Config.MODEL_NAMES_PUBLIC %}
-						<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
-						{% endfor %}
+						<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
 						{% else %}
-						{% for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC %}
-						<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
-						{% endfor %}
+						<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" form="actions"
+						onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
 						{% endif %}
-					</select>
-				</div>
-				<div class="form-group mr-2">
-					{% if session.public %}
-					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
-					{% else %}
-					<input type="button" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&uarr;" form="actions"
-					onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
+						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
+						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
+						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
+						<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
+					</div>
+					{% if session.emb_type.startswith("clip"): %}
+					<div class="form-group mr-2">
+						<input type="text" class="form-control mt-2 mb-2 mr-2" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
+					</div>	
 					{% endif %}
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
-					<input type="submit" class="btn btn-light mt-2 mb-2 mr-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
+					<div class="form-group">
+						<a class="btn btn-light mt-2 mb-2 more-toggle" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
+					</div>
 				</div>
-				{% if session.emb_type.startswith("clip"): %}
-				<div class="form-group mr-2">
-					<input type="text" class="form-control" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
-				</div>	
-				{% endif %}
-				<div class="form-group mr-2">
-					<a class="btn btn-light mt-2 mb-2 mr-2 more-toggle" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
-				</div>
-			</div>
-			<div class="collapse" id="advanced">
-			<div class="form-inline justify-content-center">
-				<div class="form-group mr-2">
-					<label class="mt-2 mb-2 mr-2">Embedding</label>
-					<select class="custom-select mt-2 mb-2 mr-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
-						{% for emb_type in session.emb_types %}
-						<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="form-group mr-2">
-					<label class="mt-2 mb-2 mr-2">Distance</label>
-					<select class="custom-select mt-2 mb-2 mr-2" name="metric" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select distance metric">
-						{% for metric in session.metrics %}
-						<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="form-group mr-2">
-					<label class="mt-2 mb-2 mr-2">Size</label>
-					<select class="custom-select" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
-						{% for size in Config.SIZES %}
-						<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="form-group mr-2">
-					<label class="mt-2 mb-2 mr-2">Neighbors</label>
-					{% if session.public %}
-					<select class="custom-select" name="n" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
-					{% else %}
-					<select class="custom-select" name="n" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select number of nearest neighbors to display in result lightbox">
-					{% endif %}						
-					{% for n in Config.NS %}
-						<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
-						{% endfor %}
-					</select>
+				<div class="collapse" id="advanced">
+					<div class="form-inline justify-content-center">
+						<div class="form-group mr-2">
+							<label class="mt-2 mb-2 mr-2">Embedding</label>
+							<select class="custom-select mt-2 mb-2 mr-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
+								{% for emb_type in session.emb_types %}
+								<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group mr-2">
+							<label class="mt-2 mb-2 mr-2">Distance</label>
+							<select class="custom-select mt-2 mb-2 mr-2" name="metric" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select distance metric">
+								{% for metric in session.metrics %}
+								<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group mr-2">
+							<label class="mt-2 mb-2 mr-2">Size</label>
+							<select class="custom-select mt-2 mb-2 mr-2" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
+								{% for size in Config.SIZES %}
+								<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="mt-2 mb-2 mr-2">Neighbors</label>
+							{% if session.public %}
+							<select class="custom-select mt-2 mb-2 mr-2" name="n" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
+							{% else %}
+							<select class="custom-select mt-2 mb-2" name="n" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select number of nearest neighbors to display in result lightbox">
+							{% endif %}						
+							{% for n in Config.NS %}
+								<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="row">
-		<div class="col">
-			<hr>
 		</div>
 	</div>
 

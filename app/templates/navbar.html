@@ -1,24 +1,25 @@
-{% from "macros.html" import nav_link with context %}
-
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-	<ul class="navbar-nav mr-auto">
-		{% if not current_user.is_anonymous and current_user.id==1 %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('datasets_private', 'Datasets') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('users', 'User Management') }}
-			{{ nav_link('logs', 'Logs') }}
-			{{ nav_link('logout', 'Logout') }}
-		{% elif current_user.is_anonymous %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('datasets_public', 'Datasets') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('login', 'Login') }}
-		{% elif not current_user.is_anonymous %}
-			{{ nav_link('interface', 'Interface') }}
-			{{ nav_link('datasets_private', 'Datasets') }}
-			{{ nav_link('imprint', 'Imprint') }}
-			{{ nav_link('logout', 'Logout') }}
-		{% endif %} 
-	</ul>
+<nav class="navbar navbar-light">
+    <button class="btn btn-light mt-2 mb-2 mr-2" type="button" data-toggle="collapse" data-target="#navbar"><span class="navbar-toggler-icon"></span></button>
+    <div class="navbar-collapse collapse px-3 py-3 bg-light" id="navbar">
+		<ul class="navbar-nav">
+			{% if not current_user.is_anonymous and current_user.id==1 %}
+				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
+				<a class="nav-item nav-link" href="{{ url_for('datasets_private') }}">Datasets</a>
+				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
+				<a class="nav-item nav-link" href="{{ url_for('users') }}">User Management</a>
+				<a class="nav-item nav-link" href="{{ url_for('logs') }}">Logs</a>
+				<a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+			{% elif current_user.is_anonymous %}
+				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
+				<a class="nav-item nav-link" href="{{ url_for('datasets_public') }}">Datasets</a>
+				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
+				<a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
+			{% elif not current_user.is_anonymous %}
+				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
+				<a class="nav-item nav-link" href="{{ url_for('datasets_private') }}">Datasets</a>
+				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
+				<a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+			{% endif %} 
+		</ul>
+    </div>
 </nav>
