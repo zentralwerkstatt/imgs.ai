@@ -6,6 +6,7 @@ import os
 from util import get_current_dir, get_parent_dir, new_dir
 
 
+# FIXME: revert to embedders.pytxt as the main application expects it
 # Choose embedders and reducers, see train.py
 """
 embedders = {
