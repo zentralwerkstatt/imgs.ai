@@ -31,10 +31,10 @@ def signup():
     if form.validate_on_submit():
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
-            flash("User name already exists; please choose another one.", 'warning')
+            flash("User name already exists; please choose another one.", "warning")
         else:
             user = create_user(form)
-            flash("Thank you for requesting access, you will hear from us in the next 24 hours.", 'info')
+            flash("Thank you for requesting access, you will hear from us in the next 24 hours.", "info")
     return render_template("signup.html", title="imgs.ai", Config=Config, form=form)
 
 
@@ -54,7 +54,7 @@ def login():
                 session.public = False
                 session.store(flask_session)
                 return redirect(url_for("interface"))
-            flash("Access not granted yet!")
+            flash("Access not granted yet!", "warning")
         else:
             flash("Invalid username/password combination")
         return redirect(url_for("login"))
@@ -120,7 +120,6 @@ def datasets_private():
     return from_md("datasets_private")
     
 
-# TODO: implement image lightbox with Bootstrap modal, see https://getbootstrap.com/docs/5.0/components/modal/
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)
@@ -136,11 +135,11 @@ def source(idx):
     if not idx.startswith("upload") and session.get_metadata(idx)[1]: # Has filled URL field        
         return redirect(session.get_metadata(idx)[1], code=302)
     else:
-        flash("No source available for selected image", 'info')
+        flash("No source available for selected image", "info")
         return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
-# TODO: make context menu responsive or replace with popover
+# FIXME: CORS errors for MoMA and Metropolitan despite flask-cors – WTF?
 # TODO: help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
@@ -149,7 +148,12 @@ def interface():
 
     # Uploads
     if request.files:
-        session.extend(request.files.getlist("file"))
+        try:
+            session.extend(request.files.getlist("file"))
+        except:
+            flash("Could not create embeddings from uploaded image", "warning")
+            request.files = None
+            pass
 
     # Settings
     if "n" in request.form:
@@ -192,10 +196,15 @@ def interface():
         session.neg_idxs = list(set(session.neg_idxs) | set(request.form.getlist("add-neg")))  # Union of sets
         session.pos_idxs = list(set(session.pos_idxs) - set(request.form.getlist("add-neg")))  # Difference of sets
 
+    # FIXME: Cannot extend from MoMA dataset only?
     # Model
     if "model" in request.form:
         if session.model != request.form["model"]: # Only reload and reset if model changed
-            session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
+            try:
+                session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
+            except:
+                flash("Could not create embeddings from pinned images", "warning")
+                session.load_model(request.form["model"]) # Do not keep queries
 
     # Determine if CLIP functions necessary
     # FIXME: don't just remove CLIP prompt as that looks like undefined behavior on the interface
