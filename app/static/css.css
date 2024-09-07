@@ -1,4 +1,4 @@
-.grid-item-img {
+.item {
   border: 3px solid transparent;
   opacity: 1;
   display: block;
@@ -6,4 +6,4 @@
   height: auto;
 }
 
-.grid-item-img.active {border-color: #007bff;}
+.item.active {border-color: #007bff;}

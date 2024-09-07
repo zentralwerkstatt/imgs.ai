@@ -3,8 +3,6 @@ conda install --yes -c conda-forge flask flask-cors flask-wtf flask-login flask-
 conda install --yes requests tqdm scikit-learn h5py gunicorn dill gdown markdown
 pip install annoy bootstrap-flask
 pip install git+https://github.com/openai/CLIP.git
-cd app/static
-npm install
 cd ../../models/public
 gdown https://drive.google.com/uc?id=1jVEjmKwv0wwTX2vt7WzAYF8F59_Tsg5s
 unzip rma.zip

@@ -1,25 +1,25 @@
-<nav class="navbar navbar-light">
-    <button class="btn btn-light mt-2 mb-2 mr-2" type="button" data-toggle="collapse" data-target="#navbar"><span class="navbar-toggler-icon"></span></button>
-    <div class="navbar-collapse collapse px-3 py-3 bg-light" id="navbar">
-		<ul class="navbar-nav">
-			{% if not current_user.is_anonymous and current_user.id==1 %}
-				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
-				<a class="nav-item nav-link" href="{{ url_for('datasets_private') }}">Datasets</a>
-				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
-				<a class="nav-item nav-link" href="{{ url_for('users') }}">User Management</a>
-				<a class="nav-item nav-link" href="{{ url_for('logs') }}">Logs</a>
-				<a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
-			{% elif current_user.is_anonymous %}
-				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
-				<a class="nav-item nav-link" href="{{ url_for('datasets_public') }}">Datasets</a>
-				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
-				<a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
-			{% elif not current_user.is_anonymous %}
-				<a class="nav-item nav-link" href="{{ url_for('interface') }}">Interface</a>
-				<a class="nav-item nav-link" href="{{ url_for('datasets_private') }}">Datasets</a>
-				<a class="nav-item nav-link" href="{{ url_for('imprint') }}">Imprint</a>
-				<a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+<div class="container pb-2 pb-5">
+		<col-auto>
+			<ul class="nav justify-content-center">
+				{% if not current_user.is_anonymous and current_user.id==1 %}
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('interface') }}">Interface</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('datasets_private') }}">Datasets</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('imprint') }}">Imprint</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('users') }}">User Management</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('logs') }}">Logs</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('logout') }}">Logout</a></li>
+				{% elif current_user.is_anonymous %}
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('interface') }}">Interface</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('datasets_public') }}">Datasets</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('imprint') }}">Imprint</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('login') }}">Login</a></li>
+				{% elif not current_user.is_anonymous %}
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('interface') }}">Interface</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('datasets_private') }}">Datasets</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('imprint') }}">Imprint</a></li>
+				<li class="nav-item"><a class="nav-link link-dark" href="{{ url_for('logout') }}">Logout</a></li>
 			{% endif %} 
-		</ul>
-    </div>
-</nav>
+			</ul>
+		</col-auto>
+	</row>
+</div>

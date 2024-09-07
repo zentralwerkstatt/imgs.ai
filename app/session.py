@@ -18,7 +18,7 @@ class Session:
         else:
             self.load_model(Config.DEFAULT_MODEL)
             self.emb_type = Config.DEFAULT_EMB_TYPE
-
+            
     def store(self, flask_session):
         flask_session["model"] = self.model
         flask_session["model_len"] = self.model_len
@@ -68,9 +68,8 @@ class Session:
         if files: self.extend(files)
 
     def get_nns(self):
-        # If we have queries or CLIP prompt, search nearest neighbors, else display random data points
-        # FIXME: cover negatives only scenario instead of ignoring
-        if self.pos_idxs or (self.pos_idxs and self.neg_idxs) or self.clip_prompt:
+        # If we have positive or mixed queries or CLIP prompt, search nearest neighbors
+        if self.pos_idxs or self.clip_prompt:
             if self.clip_prompt:
                 vector=CLIP_text(self.clip_prompt)
             else:
@@ -83,7 +82,8 @@ class Session:
                 vector=vector,
                 metric=self.metric,
                 )
-        # Random
+        # Else display random data points
+        # (Negatives only filtered by routes.py)
         else:
             if self.res_idxs: # Keep randomized selection
                 pass
