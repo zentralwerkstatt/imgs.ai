@@ -2,33 +2,26 @@
 {% block title %}{{title}}{% endblock %}
 
 {% block content %}
-<form id="upload" action="{{ url_for('interface') }}" method="POST" enctype="multipart/form-data"></form>
-<form id="actions" action="{{ url_for('interface') }}" method="POST"></form>
-<select hidden id="add-pos" name="add-pos" multiple form="actions"></select>
-<select hidden id="remove" name="remove" multiple form="actions"></select>
-<select hidden id="add-neg" name="add-neg" multiple form="actions"></select>
-<input hidden id="file" type="file" name="file" multiple onchange="$('.container').hide(); this.form.submit()" form="upload">
-
 <div class="container">
 
 	<!-- Query Images -->
 	<div class="row">
 		{% if session.pos_idxs %}
-		<div class="col align-items-stretch">
+		<div class="col-6">
 			<div class="card">
 				<div class="card-header text-center">
 					Positive
 				</div>
 				<div class="card-body">
-					<div class="grid pos">
+					<div class="row grid">	
 						{% for idx in session.pos_idxs %}
-						<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item pos">
-							<img style="width:100%" class="grid-item-img pos" src="{{ session.get_url(idx) }}" value="{{ idx }}" />
+						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
+							<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
 										<div class="modal-body justify-content-center">
-											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" onerror="$(this).hide();" /></a>
+											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
 										</div>
 									</div>
 								</div>
@@ -41,21 +34,21 @@
 		</div>
 		{% endif %}
 		{% if session.neg_idxs %}
-		<div class="col align-items-stretch">
+		<div class="col-6">
 			<div class="card">
 				<div class="card-header text-center">
 					Negative
 				</div>
 				<div class="card-body">
-					<div class="grid neg">
+					<div class="row grid">	
 						{% for idx in session.neg_idxs %}
-						<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item neg">
-							<img style="width:100%" class="grid-item-img neg" src="{{ session.get_url(idx) }}" value="{{ idx }}"/>
+						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
+							<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
 										<div class="modal-body justify-content-center">
-											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" onerror="$(this).hide();" /></a>
+											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
 										</div>
 									</div>
 								</div>
@@ -70,148 +63,137 @@
 	</div>
 
 	<!-- Controls -->
-	<div class="row my-3"> <!-- Top and bottom spacer -->
-		<div class="col">
-			<div class="card">
-				<div class="form-inline justify-content-center">
-					<div class="form-group mb-0 d-none d-md-block">
-						<label><span class="badge badge-primary mx-1 my-2">{{ session.model_len }}</span><span class="mx-1 my-1">images in</span></label>
+
+	<div class="card my-3">
+		<form action="{{ url_for('interface') }}" method="POST" enctype="multipart/form-data">
+			<div class="row py-3 gy-2 gx-2 mx-auto align-items-center justify-content-center">
+
+				<select multiple hidden id="active" name="active"></select>
+
+				<div class="col-auto">
+					<select class="form-select" id="n" name="n" onchange="this.form.submit();" {{ 'disabled' if session.public }}>
+						{% for n in Config.NS %}
+						<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="col-auto">
+					<span class="form-text">of {{ session.model_len }} in</span>
+				</div>
+
+				<div class="col-auto">
+					<select class="form-select" id="model" name="model" onchange="this.form.submit();">
+						{% set  model_names = Config.MODEL_NAMES_PUBLIC if session.public else Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC %}
+						{% for model in model_names %}
+						<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="submit" name="btn" value="Positive" onclick="set_active();">&#x2b;</button>
+				</div>
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="submit" name="btn" value="Negative" onclick="set_active();">&#8722;</button>
+				</div>
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="submit" name="btn" value="Remove" onclick="set_active();">Remove</button>
+				</div>
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="submit" name="btn" value="Clear">Clear</button>
+				</div>
+				
+				{% if session.emb_type.startswith("clip"): %}
+				<div class="col-auto">
+					<input type="text" type="submit" class="form-control" id="clip_prompt" name="clip_prompt" placeholder="{{ session.clip_prompt if session.clip_prompt else 'CLIP Prompt' }}" />
+				</div>
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="submit" name="btn" value="Go">Go</button>
+				</div>
+				{% endif %}
+
+				<div class="col-auto">
+					<button class="btn btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse">...</button>
+				</div>
+
+			</div>
+
+			<div class="collapse" id="collapse">
+				<div class="row pb-3 gy-2 gx-2 mx-auto align-items-center justify-content-center">
+
+					<div class="col-auto">
+						<input class="form-control" type="file" name="file" />
 					</div>
-					<div class="form-group mb-0">	
-						<select class="custom-select mx-1 my-2" name="model" onchange="$('.container').hide(); this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select a dataset">
-							{% if session.public %}
-							{% for model in Config.MODEL_NAMES_PUBLIC %}
-							<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+
+					<div class="col-auto">
+						<button class="btn btn-light" type="file" onclick="$(this).prop('disabled', true); $('#spinner', this).prop('hidden', false); this.form.submit()" {{ 'disabled' if session.public }}>
+						<span id="spinner" class="spinner-border spinner-border-sm" hidden></span>
+						<span id="caption">Upload</span>
+						</button>
+					</div>
+
+					<div class="col-auto">
+						<select class="form-select" id="emb_type" name="emb_type" onchange="this.form.submit();">
+							{% for emb_type in session.emb_types %}
+							<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
 							{% endfor %}
-							{% else %}
-							{% for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC %}
-							<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
-							{% endfor %}
-							{% endif %}
 						</select>
 					</div>
-					<div class="form-group mb-0">
-						{% if session.public %}
-						<input type="button" class="btn btn-light mx-1 my-2" name="btn" value="Upload" data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
-						{% else %}
-						<input type="button" class="btn btn-light mx-1 my-2" name="btn" value="Upload" form="actions"
-						onclick="$('#file').trigger('click');" data-toggle="tooltip" data-placement="top" title="Upload and search for a custom image">
-						{% endif %}
-						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="&#x2b;" form="actions" onclick="return_active('add-pos')" data-toggle="tooltip" data-placement="top" title="Confirm selection as positive samples">
-						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="&#8722;" form="actions" onclick="return_active('add-neg')" data-toggle="tooltip" data-placement="top" title="Confirm selection as negative samples">
-						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="Remove" form="actions" onclick="return_active('remove')" data-toggle="tooltip" data-placement="top" title="Remove selection from search lightbox">
-						<input type="submit" class="btn btn-light mx-1 my-2" name="btn" value="Clear" form="actions" data-toggle="tooltip" data-placement="top" title="Clear search lightbox, randomize results lightbox">
+
+					<div class="col-auto">
+						<select class="form-select" id="metric" name="metric" onchange="this.form.submit();">
+							{% for metric in session.metrics %}
+							<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
+							{% endfor %}
+						</select>
 					</div>
-					{% if session.emb_type.startswith("clip"): %}
-					<div class="form-group mb-0">
-						<input type="text" class="form-control mx-1 my-2" name="clip_prompt" placeholder="Enter prompt + ⏎" form=actions>
-					</div>	
-					{% endif %}
-					<div class="form-group mb-0 d-none d-md-block">
-						<a class="btn btn-light mx-1 my-2 more-toggle" data-toggle="collapse" href="#advanced" role="button" aria-expanded="false" aria-controls="advanced">More</a>
-					</div>
+
 				</div>
-				<div class="collapse" id="advanced">
-					<div class="form-inline justify-content-center">
-						<div class="form-group mb-0">
-							<label class="mx-1 my-2">Embedding</label>
-							<select class="custom-select mx-1 my-2" name="emb_type" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select embedding type">
-								{% for emb_type in session.emb_types %}
-								<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
-								{% endfor %}
-							</select>
-							<label class="mx-1 my-2">Distance</label>
-							<select class="custom-select mx-1 my-2" name="metric" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select distance metric">
-								{% for metric in session.metrics %}
-								<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
-								{% endfor %}
-							</select>
-						</div>
-						<div class="form-group mb-0">
-							<label class="mx-1 my-2">Size</label>
-							<select class="custom-select mx-1 my-2" name="size" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select thumbnail size">
-								{% for size in Config.SIZES %}
-								<option {{ 'selected' if session.size==size }} value="{{ size }}">{{ size }}</option>
-								{% endfor %}
-							</select>
-							<label class="mx-1 my-2">Neighbors</label>
-							{% if session.public %}
-							<select class="custom-select mx-1 my-2" name="n" onchange="this.form.submit()" form="actions"  data-toggle="tooltip" data-placement="top" title="This function is only available for registered users with a valid institutional email address." disabled>
-							{% else %}
-							<select class="custom-select mx-1 my-2" name="n" onchange="this.form.submit()" form="actions" data-toggle="tooltip" data-placement="top" title="Select number of nearest neighbors to display in result lightbox">
-							{% endif %}						
-								{% for n in Config.NS %}
-								<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
-								{% endfor %}
-							</select>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+			</div>		
+		</form>
 	</div>
 
 	<!-- Search results -->
-	<div class="row">
-		<div class="col">
-			<div class="grid res">
-				{% for idx in session.res_idxs %}
-				<div style="max-width: {{ '111' if session.size=='Small' else '222' }}px" class="grid-item res" data-toggle="tooltip" data-placement="top" title="Left click to select, double click to enlarge/go to source website">
-					<img style="width: 100%" class="grid-item-img res" src="{{ session.get_url(idx) }}" value="{{ idx }}" id="{{ idx }}" />				
-					<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-body justify-content-center">
-									<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" onerror="$(this).hide();" /></a>
-								</div>
-							</div>
+	<div class="row grid">	
+		{% for idx in session.res_idxs %}
+		<div class="col-lg-1 col-md-2 col-sm-4 col-4 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="this.hide();" ondblclick="$('.modal', this).modal('toggle');">
+			<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
+			<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-body justify-content-center">
+							<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
 						</div>
 					</div>
 				</div>
-				{% endfor %}
 			</div>
 		</div>
+		{% endfor %}
 	</div>
+
 </div>
 
-<script src="{{ url_for('static', filename='node_modules/packery/dist/packery.pkgd.min.js') }}"></script>
-<script src="{{ url_for('static', filename='node_modules/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
 <script>	
-		
-	$(".grid-item-img").on("click", function (event) {
-		$(this).toggleClass("active");
-	});
 
-	$(".grid-item").on("dblclick", function (event) {
-		$(this).find(".modal").modal('toggle');
+	$(".grid").imagesLoaded().progress( function() {
+		console.log("Images loaded");
+  		$(".grid").masonry({
+			percentPosition: true})
 	});
 	
-	function return_active(select) {
-		$(".active").each(function () {
+	function set_active() {
+		$(".active").each( function() {
 			value = $(this).attr("value");
-			console.log(value)
 			if (value != undefined){
-				$("#" + select).append(new Option(value, value, false, true));
-			} else {
-				console.log(`${$(this)}'s value yielded undefined`)
+				$("#active").append(new Option(value, value, false, true));
 			}
 		});
 	};
-
-	var $grid_pos = $(".grid.pos").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.pos", gutter: 0});
-	$grid_pos.imagesLoaded().progress(function () {
-		$grid_pos.packery("layout");
-	});
-	
-	var $grid_neg = $(".grid.neg").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.neg", gutter: 0});
-	$grid_neg.imagesLoaded().progress(function () {
-		$grid_neg.packery("layout");
-	});
-	
-	var $grid_res = $(".grid.res").packery({columnWidth: {{"111" if session.size=="Small" else "222"}}, itemSelector: ".grid-item.res", gutter: 0});
-	$grid_res.imagesLoaded().progress(function () {
-		$grid_res.packery("layout");
-	});
 
 </script>
 {% endblock %}

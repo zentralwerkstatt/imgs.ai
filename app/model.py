@@ -17,7 +17,9 @@ class EmbeddingModel:
         self.model_folder = None
         
         self.metadata = {}
-        self.paths = {}
+        # TODO: This should be read from a HDF5 file as well to reduce model RAM overhead
+        # See https://docs.h5py.org/en/stable/special.html#variable-length-strings
+        self.paths = {} 
         
         self.config = {
                 "model_len": None,
@@ -58,13 +60,6 @@ class EmbeddingModel:
 
         return idxs
 
-    # For models where embeddings have been kept
-    def get_features(self, emb_type):
-        embs_file = os.path.join(self.model_folder, "embeddings.hdf5")
-        embs = h5py.File(embs_file, "r")
-        return embs[emb_type]
-
-    # TODO: enable mode selection on interface for multiple positives
     def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, vector=None, mode="ranking", search_k=-1):
         # Load neighborhood file
         hood_file = os.path.join(self.model_folder, f"{emb_type}_{metric}.ann")
@@ -91,46 +86,41 @@ class EmbeddingModel:
         n = min(n, len(self))
 
         # Get nearest neighbors
-        if pos_idxs and neg_idxs:  # Arithmetic
-            vectors = np.array(vectors_from_idxs(pos_idxs + neg_idxs))
-            centroid = vectors.mean(axis=0)
-            pos_vectors = np.array(vectors_from_idxs(pos_idxs))
-            neg_vectors = np.array(vectors_from_idxs(neg_idxs))
 
-            pos_sum = 0
-            for vector in pos_vectors:
-                pos_sum += vector
-            centroid += pos_sum
-            neg_sum = 0
-            for vector in neg_vectors:
-                neg_sum += vector
-            centroid -= neg_sum
-            nns = ann.get_nns_by_vector(
-                centroid, n, search_k=search_k, include_distances=False
-            )
+        if vector is not None:
+            nns = ann.get_nns_by_vector(vector[0], n, search_k=search_k, include_distances=False)
 
-        elif len(pos_idxs) > 1 and len(neg_idxs) == 0: # Ranking
-            ranking = {}
-            for idx in pos_idxs:
-                vector = vectors_from_idxs([idx])[0]
-                idx_nns, idx_scores = ann.get_nns_by_vector(
-                    vector, n, search_k=search_k, include_distances=True
-                )
-                for nn, score in zip(idx_nns, idx_scores):
-                    # If the neighbor was found already, just update the score
-                    if nn in ranking:
-                        if ranking[nn] > score:
-                            ranking[nn] = score
-                    else:
-                        ranking[nn] = score
-            nns = list(sort_dict(ranking).keys())
+        else:
 
-        else:  # Single
-            if vector is None:
+            if pos_idxs and neg_idxs:  # Arithmetic
+                vectors = np.array(vectors_from_idxs(pos_idxs + neg_idxs))
+                centroid = vectors.mean(axis=0)
+                pos_vectors = np.array(vectors_from_idxs(pos_idxs))
+                neg_vectors = np.array(vectors_from_idxs(neg_idxs))
+
+                pos_sum = 0
+                for vector in pos_vectors:
+                    pos_sum += vector
+                centroid += pos_sum
+
+                neg_sum = 0
+                for vector in neg_vectors:
+                    neg_sum += vector
+                centroid -= neg_sum
+
+                nns = ann.get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+
+            elif len(pos_idxs) > 1 and len(neg_idxs) == 0: # Multiple positives
+                vectors = np.array(vectors_from_idxs(pos_idxs))
+                centroid = vectors.mean(axis=0)
+                nns = ann.get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+
+            elif len(pos_idxs) == 1:  # Single positive
                 vector = vectors_from_idxs(pos_idxs)
-            nns = ann.get_nns_by_vector(
-                vector[0], n, search_k=search_k, include_distances=False
-            )
+                nns = ann.get_nns_by_vector(vector[0], n, search_k=search_k, include_distances=False)
+
+            else:  # Random
+                nns = ann.get_nns_by_item(np.random.randint(len(self)), n, search_k=search_k, include_distances=False)
 
         # Unload neighborhood file
         ann.unload()

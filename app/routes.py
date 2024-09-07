@@ -11,12 +11,13 @@ import os
 from markdown import markdown
 
 
-def from_md(fname):
+def from_md(fname, title):
+    header = f"<h3>{title}</h3>\n<hr>\n"
     if not fname.endswith(".md"):
         fname+=".md"
     path = os.path.join(app.root_path, app.static_folder, "md", fname)
     with open(path, "r") as f:
-        md = markdown(f.read())
+        md = header + markdown(f.read())
     return render_template("md.html", title="imgs.ai", Config=Config, md=md)
 
 
@@ -25,6 +26,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+'''
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     form = SignupForm()
@@ -36,6 +38,7 @@ def signup():
             user = create_user(form)
             flash("Thank you for requesting access, you will hear from us in the next 24 hours.", "info")
     return render_template("signup.html", title="imgs.ai", Config=Config, form=form)
+'''
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -61,6 +64,7 @@ def login():
     return render_template("login.html", title="imgs.ai", Config=Config, form=form)
 
 
+# FIXME: Toggle design not Bootstrap 5 compatible
 @app.route("/users", methods=["GET", "POST"])
 @login_required
 def users():
@@ -101,29 +105,29 @@ def logout():
 
 @app.route("/")
 def index():
-    return from_md("about")
+    return from_md("about", "About")
 
 
 @app.route("/imprint")
 def imprint():
-    return from_md("imprint")
+    return from_md("imprint", "Imprint")
 
 
 @app.route("/datasets_public")
 def datasets_public():
-    return from_md("datasets_public")
+    return from_md("datasets_public", "Datasets")
 
 
 @app.route("/datasets_private")
 @login_required
 def datasets_private():
-    return from_md("datasets_private")
+    return from_md("datasets_private", "Datasets")
     
 
 @app.route("/full/<idx>")
 def full(idx):
     session = Session(flask_session)
-    # FIXME: if previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message"
+    # FIXME: If previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message"
     return redirect(session.get_url(idx), code=302)
 
 
@@ -140,82 +144,79 @@ def source(idx):
 
 
 # FIXME: CORS errors because servers do not always send access-control-allow-origin headers (mostly MoMA), potential solution: local dataset
-# TODO: help page
+# TODO: Help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
-    # Load from cookie
     session = Session(flask_session)
 
-    # Uploads
-    if request.files:
-        try:
-            session.extend(request.files.getlist("file"))
-        except:
-            flash("Could not create embeddings from uploaded image", "warning")
-            request.files = None
-            pass
+    if request.method == "POST":
 
-    # Settings
-    if "n" in request.form:
-        session.n = request.form["n"]
-    if "emb_type" in request.form:
-        session.emb_type = request.form["emb_type"]
-        session.metrics = models[session.model].config["emb_types"][session.emb_type]["metrics"]
-    if "metric" in request.form:
-        session.metric = request.form["metric"] if request.form["metric"] in session.metrics else session.metrics[0]
-    if "size" in request.form:
-        session.size = request.form["size"]
-
-    # Actions
-    if "btn" in request.form:
-        if request.form["btn"] == "Positive":
-            new_pos = set(request.form.getlist("add-pos"))
-            session.pos_idxs = list(set(session.pos_idxs) | new_pos) # Union of sets
-            session.neg_idxs = list(set(session.neg_idxs) - new_pos)  # Difference of sets
-
-        elif request.form["btn"] == "Remove":
-            removables = set(request.form.getlist("remove"))
-            session.pos_idxs = list(set(session.pos_idxs) - removables)  # Difference of sets
-            session.neg_idxs = list(set(session.neg_idxs) - removables)  # Difference of sets
-
-        elif request.form["btn"] == "Negative":
-            session.neg_idxs = list(set(session.neg_idxs) | set(request.form.getlist("add-neg")))  # Union of sets
-            session.pos_idxs = list(set(session.pos_idxs) - set(request.form.getlist("add-neg")))  # Difference of sets
-
-        elif request.form["btn"] == "Clear":
-            session.neg_idxs = []
-            session.pos_idxs = []
-            session.res_idxs = []
-
-    if 'add-pos' in request.form:
-        new_pos = set(request.form.getlist("add-pos"))
-        session.pos_idxs = list(set(session.pos_idxs) | new_pos) # Union of sets
-        session.neg_idxs = list(set(session.neg_idxs) - set(request.form.getlist("add-pos")))  # Difference of sets
-
-    if 'add-neg' in request.form:
-        session.neg_idxs = list(set(session.neg_idxs) | set(request.form.getlist("add-neg")))  # Union of sets
-        session.pos_idxs = list(set(session.pos_idxs) - set(request.form.getlist("add-neg")))  # Difference of sets
-
-    # FIXME: Cannot extend from MoMA dataset only?
-    # Model
-    if "model" in request.form:
-        if session.model != request.form["model"]: # Only reload and reset if model changed
+        # Uploads
+        file = request.files["file"]
+        if file.filename and '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ["png", "jpg", "jpeg", "gif"]:
             try:
-                session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
+                session.extend([file])
             except:
-                flash("Could not create embeddings from pinned images", "warning")
-                session.load_model(request.form["model"]) # Do not keep queries
+                flash("Could not create embeddings from uploaded image", "warning")
+                pass
 
-    # Determine if CLIP functions necessary
-    # FIXME: don't just remove CLIP prompt as that looks like undefined behavior on the interface
-    # TODO: CLIP prompts become "images" that can be kept, removed, or turned negative
-    session.clip_prompt = ""
+        # Settings
+        if "n" in request.form:
+            session.n = request.form["n"]
+        if "emb_type" in request.form:
+            session.emb_type = request.form["emb_type"]
+            session.metrics = models[session.model].config["emb_types"][session.emb_type]["metrics"]
+        if "metric" in request.form:
+            session.metric = request.form["metric"] if request.form["metric"] in session.metrics else session.metrics[0]
+        if "size" in request.form:
+            session.size = request.form["size"]
+
+        # Actions
+        if "btn" in request.form:
+            active = set(request.form.getlist("active"))
+            if request.form["btn"] == "Positive":
+                session.pos_idxs = list(set(session.pos_idxs) | active) # Union of sets
+                session.neg_idxs = list(set(session.neg_idxs) - active)  # Difference of sets
+
+            elif request.form["btn"] == "Remove":
+                session.pos_idxs = list(set(session.pos_idxs) - active)  # Difference of sets
+                session.neg_idxs = list(set(session.neg_idxs) - active)  # Difference of sets
+
+            elif request.form["btn"] == "Negative":
+                session.neg_idxs = list(set(session.neg_idxs) | active)  # Union of sets
+                session.pos_idxs = list(set(session.pos_idxs) - active)  # Difference of sets
+
+            elif request.form["btn"] == "Clear":
+                session.neg_idxs = []
+                session.pos_idxs = []
+                session.res_idxs = []
+
+        # Model
+        # FIXME: Cannot extend from MoMA dataset only?
+        if "model" in request.form:
+            if session.model != request.form["model"]: # Only reload and reset if model changed
+                try:
+                    session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
+                except:
+                    flash("Could not create embeddings from pinned images", "warning")
+                    session.load_model(request.form["model"]) # Do not keep queries
+
+        # CLIP
+        # TODO: CLIP prompts become "images" that can be kept, removed, or turned negative
+        session.clip_prompt = ""
+        if session.emb_type.startswith("clip"):
+            if "clip_prompt" in request.form and request.form["clip_prompt"]:
+                session.clip_prompt = request.form["clip_prompt"]
+
     search_target = f"idxs +{session.pos_idxs}, -{session.neg_idxs}"
-    if session.emb_type.startswith("clip"):
-        if "clip_prompt" in request.form and request.form["clip_prompt"]:
-            session.clip_prompt = request.form["clip_prompt"]
-            search_target = f"'{session.clip_prompt}'"
-            
+    
+    if session.clip_prompt: 
+        search_target = f"'{session.clip_prompt}'"
+
+    if len(session.neg_idxs) > 0 and len(session.pos_idxs) == 0 and not session.clip_prompt:
+        flash("Cannot have negative queries without positive queries", "warning")
+        session.neg_idxs = []
+ 
     # Get NNs
     start = time.process_time()
     session.get_nns()

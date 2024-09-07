@@ -18,7 +18,7 @@ class Config(object):
     SIZES = ["Small", "Large"]
     DEFAULT_SIZE = "Small"
     DEFAULT_MODEL = "Rijksmuseum"
-    DEFAULT_EMB_TYPE = "clip_vit" # FIXME: must exist for all models
+    DEFAULT_EMB_TYPE = "clip_vit" # FIXME: Must exist for all models
 
     SESSION_COOKIE_SECURE = False # Activate in production
     REMEMBER_COOKIE_SECURE = False # Activate in production

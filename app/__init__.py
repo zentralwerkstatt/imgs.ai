@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_cors import CORS
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap5
 from app.model import EmbeddingModel
 from datetime import date
 import importlib
@@ -30,7 +30,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Plugins
-Bootstrap(app)  # Bootstrap
+Bootstrap5(app)  # Bootstrap
 CORS(app)  # CORS
 login_manager = LoginManager(app)  # Login
 login_manager.login_view = "login"
