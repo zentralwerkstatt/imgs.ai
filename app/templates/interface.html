@@ -16,7 +16,7 @@
 					<div class="row grid">	
 						{% for idx in session.pos_idxs %}
 						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
-							<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
+							<img style="width: 100%; " src="{{ session.get_url(idx) }}" />				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
@@ -43,7 +43,7 @@
 					<div class="row grid">	
 						{% for idx in session.neg_idxs %}
 						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
-							<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
+							<img style="width: 100%; " src="{{ session.get_url(idx) }}" />				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
@@ -159,7 +159,7 @@
 	<div class="row grid">	
 		{% for idx in session.res_idxs %}
 		<div class="col-lg-1 col-md-2 col-sm-4 col-4 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="this.hide();" ondblclick="$('.modal', this).modal('toggle');">
-			<img style="width: 100%; height=auto" src="{{ session.get_url(idx) }}" />				
+			<img style="width: 100%;" src="{{ session.get_url(idx) }}" />				
 			<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 				<div class="modal-dialog">
 					<div class="modal-content">
