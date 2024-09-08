@@ -131,10 +131,7 @@
 					</div>
 
 					<div class="col-auto">
-						<button class="btn btn-light" type="file" onclick="$(this).prop('disabled', true); $('#spinner', this).prop('hidden', false); this.form.submit()" {{ 'disabled' if session.public }}>
-						<span id="spinner" class="spinner-border spinner-border-sm" hidden></span>
-						<span id="caption">Upload</span>
-						</button>
+						<button class="btn btn-light" type="file" onclick="this.form.submit()" {{ 'disabled' if session.public }}>Upload</button>
 					</div>
 
 					<div class="col-auto">
