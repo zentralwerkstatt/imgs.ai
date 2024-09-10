@@ -1,102 +1,64 @@
-from app.util import set_cuda, load_img, sort_dict, save_imgs_to
+from app.util import set_cuda, load_img
 import numpy as np
 import os
 import dill as pickle
 import json
 from annoy import AnnoyIndex
 import h5py
-import csv
 from app.embedders import *
 from sklearn.decomposition import PCA, IncrementalPCA # Used by dynamic imports
 
 
 class EmbeddingModel:
 
-    def __init__(self):
-        # Initialize with empty data structure
-        self.model_folder = None
-        
-        self.metadata = {}
-        # TODO: This should be read from a HDF5 file as well to reduce model RAM overhead
-        # See https://docs.h5py.org/en/stable/special.html#variable-length-strings
-        self.paths = {} 
-        
-        self.config = {
-                "model_len": None,
-                "emb_types": {}
-            }
+    def __init__(self, model_folder):
+        with open(os.path.join(model_folder, "config.json"), "r") as config: # Must exist
+            self.config = json.load(config)
+        self.model_folder = model_folder # Relative  
+        self.model_name = os.path.basename(model_folder)
+
+        # Neighborhoods
+        self.anns = {}
+        for emb_type, emb_type_props in self.config["emb_types"].items():
+            self.anns[emb_type] = {}
+            for metric in emb_type_props["metrics"]:
+                self.anns[emb_type][metric] = AnnoyIndex(self.config["emb_types"][emb_type]["dims"], metric)
+                self.anns[emb_type][metric].load(os.path.join(self.model_folder, f"{emb_type}_{metric}.ann")) # Nmaps the file
+
+        # Metadata
+        self.metadata = h5py.File(os.path.join(self.model_folder, "metadata.hdf5"), "r") # Must exist
 
     def __len__(self):
-        return self.config["model_len"]
+        return int(self.config["model_len"])
 
-    def load(self, model_folder):
-        self.model_folder = model_folder
+    def decode_metadata(self, metadata):
+        return json.loads(metadata.decode("utf-8"))
+    
+    def valid(self, idx):
+        return idx in list(range(int(self.config["model_len"]))) # Indices are strings
 
-        # Load configuration
-        CONFIG_FPATH = os.path.join(model_folder, "config.json")
-        with open(CONFIG_FPATH, "r") as config:
-            self.config = json.load(config)
+    def get_metadata(self, idx):
+        return self.decode_metadata(self.metadata["metadata"][int(idx)]) # Indices are strings
+    
+    def get_vectors_for_idx(self, idx):
+        vectors = {}
+        for emb_type, emb_type_props in self.config["emb_types"].items():
+            vectors[emb_type] = {}
+            for metric in emb_type_props["metrics"]:
+                vectors[emb_type][metric] = self.anns[emb_type][metric].get_item_vector(int(idx))  # Indices are strings
+        return vectors
 
-        # Read metadata and paths
-        with open(os.path.join(self.model_folder, "metadata.csv")) as meta_file:
-            for idx, row in enumerate(csv.reader(meta_file)):
-                self.metadata[str(idx)] = row
-                self.paths[str(idx)] = row[0]
-
-    def extend(self, imgs, uploads_path):
-        # Load uploads file
-        uploads_file = os.path.join(self.model_folder, "uploads.hdf5")
-        uploads = h5py.File(uploads_file, "a")  # Read/write/create
-
-        paths, idxs = save_imgs_to(imgs, "upload", uploads_path)
-        embs = self.transform(paths)
-
-        for i, idx in enumerate(idxs):
-            for emb_type in embs:
-                uploads.create_dataset(f"{idx}/{emb_type}", compression="lzf", data=embs[emb_type][i])
-
-        # Unload uploads file
-        uploads.close()
-
-        return idxs
-
-    def get_nns(self, emb_type, n, pos_idxs, neg_idxs, metric, vector=None, mode="ranking", search_k=-1):
-        # Load neighborhood file
-        hood_file = os.path.join(self.model_folder, f"{emb_type}_{metric}.ann")
-        ann = AnnoyIndex(self.config["emb_types"][emb_type]["dims"], metric)
-        ann.load(hood_file)
-
-        # Load uploads file
-        uploads_file = os.path.join(self.model_folder, "uploads.hdf5")
-        uploads = h5py.File(uploads_file, "a")
-
-        # Get vectors from indices
-        def vectors_from_idxs(idxs):
-            vectors = []
-            for idx in idxs:
-                if idx.startswith("upload"):
-                    vectors.append(uploads[idx][emb_type]) # Uploaded file
-                else:
-                    vectors.append(ann.get_item_vector(int(idx)))  # Indices are strings
-                return vectors
-
+    def get_nns_from_vectors(self, emb_type, n, pos_idxs, neg_idxs, metric, search_k=-1):
         nns = []
 
-        # Don't try to display more than we have
-        n = min(n, len(self))
+        # Do the math
+        if pos_idxs or neg_idxs:
 
-        # Get nearest neighbors
-
-        if vector is not None:
-            nns = ann.get_nns_by_vector(vector[0], n, search_k=search_k, include_distances=False)
-
-        else:
-
-            if pos_idxs and neg_idxs:  # Arithmetic
-                vectors = np.array(vectors_from_idxs(pos_idxs + neg_idxs))
+            if len(pos_idxs) > 0 and len(neg_idxs) > 0:  # Arithmetic
+                vectors = np.array(pos_idxs + neg_idxs)
                 centroid = vectors.mean(axis=0)
-                pos_vectors = np.array(vectors_from_idxs(pos_idxs))
-                neg_vectors = np.array(vectors_from_idxs(neg_idxs))
+                pos_vectors = np.array(pos_idxs)
+                neg_vectors = np.array(neg_idxs)
 
                 pos_sum = 0
                 for vector in pos_vectors:
@@ -108,34 +70,32 @@ class EmbeddingModel:
                     neg_sum += vector
                 centroid -= neg_sum
 
-                nns = ann.get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, int(n), search_k=search_k, include_distances=False)
 
             elif len(pos_idxs) > 1 and len(neg_idxs) == 0: # Multiple positives
-                vectors = np.array(vectors_from_idxs(pos_idxs))
+                vectors = np.array(pos_idxs)
                 centroid = vectors.mean(axis=0)
-                nns = ann.get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, int(n), search_k=search_k, include_distances=False)
 
             elif len(pos_idxs) == 1:  # Single positive
-                vector = vectors_from_idxs(pos_idxs)
-                nns = ann.get_nns_by_vector(vector[0], n, search_k=search_k, include_distances=False)
+                vector = np.array(pos_idxs[0])
+                nns = self.anns[emb_type][metric].get_nns_by_vector(vector, int(n), search_k=search_k, include_distances=False)
 
-            else:  # Random
-                nns = ann.get_nns_by_item(np.random.randint(len(self)), n, search_k=search_k, include_distances=False)
+            else: # Single or multiple negatives, return random
+                nns = np.random.randint(len(self), size=int(n))
 
-        # Unload neighborhood file
-        ann.unload()
+        else:  # Return random
+            nns = np.random.randint(len(self), size=int(n))
 
-        nns = [str(nn) for nn in nns]  # Indices are strings
-        nns = list(set(nns) - set(pos_idxs + neg_idxs))  # Remove queries
-        nns = nns[:n]  # Limit to n
+        # Do not remove queries from results as sanity check
 
-        return nns
+        return [str(nn) for nn in nns]  # Indices are strings
 
     def transform(self, paths):
         device = set_cuda()
 
         # Recreate embedders object from description only
-        with open(os.path.join(self.model_folder, "embedders.pytxt")) as f:
+        with open(os.path.join(self.model_folder, "embedders.pytxt")) as f: # Must exist
             embedders_string = f.read()
         locals = {}
         exec(embedders_string, globals(), locals)
@@ -144,7 +104,7 @@ class EmbeddingModel:
         # Replace reducers with fitted versions from file
         for emb_type, embedder in embedders.items():
             if embedder.reducer:
-                with open(os.path.join(self.model_folder, f"{emb_type}_reducer.dill"), "rb") as f:
+                with open(os.path.join(self.model_folder, f"{emb_type}_reducer.dill"), "rb") as f: # Must exist
                     embedders[emb_type].reducer = pickle.load(f)
 
         # Allocate space

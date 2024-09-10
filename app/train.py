@@ -150,6 +150,7 @@ def train(X, model_folder, embedders, data_root, num_workers=32, start=0, end=No
                 hood_file = os.path.join(model_folder, f"{emb_type.lower()}_{metric}.ann")
                 ann.save(hood_file)
 
+        # FIXME: Write directly to HDF5
         # Align and write metadata
         log.info(f'Aligning metadata')
         meta = []

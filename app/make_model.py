@@ -6,7 +6,7 @@ import os
 from util import get_current_dir, get_parent_dir, new_dir
 
 
-# FIXME: revert to embedders.pytxt as the main application expects it
+# FIXME: Revert to embedders.pytxt as the main application expects it
 # Choose embedders and reducers, see train.py
 """
 embedders = {
@@ -19,7 +19,8 @@ embedders = {
 embedders = {
     "clip_vit": Embedder_CLIP_ViT(),
 }
-data_root = "/data/dev.imgs.ai/ImageNet" # CSV file or folder
+# TODO: Copy automatically from data_root to model_folder/data
+data_root = "/data/dev.imgs.ai/ImageNet" # CSV file or folder, if folder need to copy to model_folder/data after training
 model_name = "ImageNet10K"
 model_status = "private"
 max_data = 10000 # Limit to max_data images (useful for testing purposes)

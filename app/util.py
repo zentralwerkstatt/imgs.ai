@@ -54,31 +54,6 @@ def img_from_url(url, max_tries=10):
         time.sleep(1)
 
 
-def save_imgs_to(imgs, prefix, folder):    
-    new_dir(folder)
-    paths = []
-    idxs = []
-    for img in imgs:
-        if isinstance(img, str): # URL or file path
-            if img.startswith("http"):
-                img = img_from_url(img)
-            else:
-                img = PIL.Image.open(img).convert("RGB")
-        else: # Data stream
-            stream = BytesIO(img.read())
-            img = PIL.Image.open(stream).convert("RGB")
-        idx = f"{prefix}_{str(uuid4())}.jpg"
-        path = str(os.path.join(folder, idx))
-        img.save(path)
-        paths.append(path)
-        idxs.append(idx)
-    return paths, idxs
-
-
-def sample_range(n, k):
-    return sample(list(range(n)), k=k)
-
-
 def serve_pil_image(img):
     img_io = StringIO()
     img.save(img_io, 'JPEG', quality=70)
@@ -88,10 +63,6 @@ def serve_pil_image(img):
 
 def load_img(path):
     return PIL.Image.open(path).convert("RGB")
-
-
-def sort_dict(d):
-    return {k: v for k, v in sorted(d.items(), key=lambda item: item[1])}
 
 
 def new_dir(folder):
