@@ -5,13 +5,14 @@ import random
 from tqdm import tqdm
 import json
 
+
 def lencode(row):
     return json.dumps(row)
 
 def ldecode(string):
     return json.loads(string)
 
-model_folder = "models/public/Rijksmuseum"
+model_folder = "static/models/Rijksmuseum_1K_local"
 
 meta_file = os.path.join(model_folder, "metadata.csv")
 old_meta = csv.reader(open(meta_file))

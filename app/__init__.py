@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 # Config
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32)
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.dirname(os.path.realpath(__file__))}/users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:////Users/fabian/Desktop/imgs.ai/users.db" # Absolute
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_COOKIE_SECURE"] = False # Activate in production
 app.config["REMEMBER_COOKIE_SECURE"] = False # Activate in production

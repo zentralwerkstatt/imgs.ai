@@ -132,7 +132,7 @@
 				<div class="row pb-3 gy-2 gx-2 mx-auto align-items-center justify-content-center">
 
 					<div class="col-auto">
-						<input class="form-control" type="file" name="upload" onchange="this.form.submit();" />
+						<input class="form-control" type="file" name="upload" onchange="this.form.submit();" {{ "disabled" if not session.config["private"] }}/>
 					</div>
 
 					<div class="col-auto">

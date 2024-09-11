@@ -37,13 +37,16 @@ class Session:
         self.config["private"] = False
         self.config["model_name"] = model_name
         self.config["model_names"] = [model_name for model_name in models.keys() if models[model_name].config["private"] == self.config["private"]]
-        self.config["model_len"] = models[self.config["model_name"]].config["model_len"]
+        self.config["model_len"] = len(models[self.config["model_name"]])
         self.config["emb_types"] = list(models[self.config["model_name"]].config["emb_types"].keys())
         self.config["emb_type"] = self.config["emb_types"][0] # ALways put CLIP first in config.json
         self.config["metrics"] = models[self.config["model_name"]].config["emb_types"][self.config["emb_type"]]["metrics"]
         self.config["metric"] = self.config["metrics"][0]
         self.config["ns"] = ["25", "50", "75", "100"]
         self.config["n"] = "50"
+        self.data["pos_idxs"] = [idx.keep() for idx in self.data["pos_idxs"]] # Keep from previous model
+        self.data["neg_idxs"] = [idx.keep() for idx in self.data["neg_idxs"]] # Keep from previous model
+        self.data["res_idxs"] = []
         self.aliases()
         
     def edit_idxs(self, action, idxs=None, upload=None, prompt=None):

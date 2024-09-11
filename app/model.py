@@ -33,9 +33,6 @@ class EmbeddingModel:
 
     def decode_metadata(self, metadata):
         return json.loads(metadata.decode("utf-8"))
-    
-    def valid(self, idx):
-        return idx in list(range(int(self.config["model_len"]))) # Indices are strings
 
     def get_metadata(self, idx):
         return self.decode_metadata(self.metadata["metadata"][int(idx)]) # Indices are strings

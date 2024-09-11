@@ -1,6 +1,7 @@
 from uuid import uuid4
-from app.util import new_dir
+from app.util import new_dir, img_from_url
 from app.util import CLIP_text
+from PIL import Image
 
 
 class Index:
@@ -26,14 +27,13 @@ class ModelIndex(Index):
     def __init__(self, model, idx):
         super().__init__()
         self.idx = idx
-        self.model_name = model.model_name
         metadata = model.get_metadata(self.idx)
         if metadata[0].startswith("http"):
             self.url = metadata[0]
             self.path = None
         else:
-            self.url = f"static/{metadata[0]}"
-            self.path = metadata[0]
+            self.url = f"static/models/{model.model_name}/data/{metadata[0]}"
+            self.path = f"app/static/models/{model.model_name}/data/{metadata[0]}"
         if len(metadata) > 1:
             source = metadata[1] # Column 2 is source
         else:
@@ -44,11 +44,15 @@ class ModelIndex(Index):
         # TODO: Implement metadata in footer
 
     def get_vectors(self, model, emb_type, metric):
-        if model.model_name == self.model_name:
-            return model.get_vectors_for_idx(self.idx)[emb_type][metric]
+        return model.get_vectors_for_idx(self.idx)[emb_type][metric]
+    
+    def keep(self):
+        print("Keeping")
+        if self.path:
+            return UploadIndex(self, Image.open(self.path))
         else:
-            # TODO: Implement pinned idxs on model change
-            return None
+            return UploadIndex(self, img_from_url(self.url))
+        
     
 class UploadIndex(Index):
     def __init__(self, upload):
@@ -66,6 +70,13 @@ class UploadIndex(Index):
         if not model.model_name in self.vectors:
             self.vectors[model.model_name] = model.transform([self.path])
         return self.vectors[model.model_name][emb_type][0] # Images do not have precomputed NNs and thus no metric
+    
+    def get_image(self):
+        return Image.open(self.path)
+    
+    def keep(self):
+        return self
+
 
 class PromptIndex(Index):
     def __init__(self, prompt):
@@ -87,5 +98,8 @@ class PromptIndex(Index):
             # FIXME: Color change does not work
             self.html = f'<span style="color: grey">{self.prompt}</span>'
             return None
+        
+    def keep(self):
+        return self
 
 
