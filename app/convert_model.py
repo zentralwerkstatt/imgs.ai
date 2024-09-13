@@ -13,7 +13,7 @@ from train import build
 
 old_model = "Rijksmuseum" # Name of the existing model
 new_model = "Rijksmuseum_10K_local" # Name of the local copy
-model_dir = f"/Users/fabian/Desktop/dev/imgs.ai/app/static/models"  # Absolute, storage for models
+model_dir = f"/Users/fabianoffert/git/imgs.ai/app/static/models"  # Absolute, storage for models
 num_workers = 32
 resize = 640
 max_data = 10000
@@ -94,9 +94,4 @@ pbar_success.close()
 pbar_failure.close()
 
 # Rebuild
-with open(f"{model_dir}/{new_model}/embedders.pytxt") as f:
-    embedders_string = f.read()
-    locals = {}
-    exec(embedders_string, globals(), locals)
-    embedders = locals['embedders']
-build(X, f"{model_dir}/{new_model}", embedders)
+build(X, f"{model_dir}/{new_model}")

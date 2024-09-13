@@ -49,9 +49,9 @@ class ModelIndex(Index):
     def keep(self):
         print("Keeping")
         if self.path:
-            return UploadIndex(self, Image.open(self.path))
+            return UploadIndex(Image.open(self.path))
         else:
-            return UploadIndex(self, img_from_url(self.url))
+            return UploadIndex(img_from_url(self.url))
         
     
 class UploadIndex(Index):

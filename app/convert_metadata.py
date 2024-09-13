@@ -12,7 +12,7 @@ def lencode(row):
 def ldecode(string):
     return json.loads(string)
 
-model_folder = "static/models/Rijksmuseum_1K_local"
+model_folder = "static/models/Rijksmuseum"
 
 meta_file = os.path.join(model_folder, "metadata.csv")
 old_meta = csv.reader(open(meta_file))

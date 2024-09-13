@@ -154,6 +154,7 @@ def build(X, model_folder, n_trees=100, private=False):
     dtype = h5py.string_dtype(encoding='utf-8')
     meta.create_dataset("metadata", (len(valid_idxs),), dtype=dtype, compression="lzf")
     for i, idx in enumerate(valid_idxs):
+        # FIXME: This breaks with index out of bounds?
         meta["metadata"][i] = json.dumps(X[idx]) # JSON gives us strings
 
     # Save fitted reducers
