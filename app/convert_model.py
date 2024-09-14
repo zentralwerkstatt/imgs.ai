@@ -9,67 +9,73 @@ from threading import Lock, Thread
 from queue import Queue, Empty
 from util import img_from_url, new_dir
 from train import build
+import h5py
+import numpy as np
 
 
-old_model = "Rijksmuseum" # Name of the existing model
-new_model = "Rijksmuseum_10K_local" # Name of the local copy
-model_dir = f"/Users/fabianoffert/git/imgs.ai/app/static/models"  # Absolute, storage for models
-num_workers = 32
+old_model = "static/models/Rijksmuseum" # Name of the existing model
+new_model = "static/models/Rijksmuseum_1K_local" # Name of the local copy
 resize = 640
-max_data = 10000
+max_data = 1000
+num_workers = 32
 
-new_model_data_root = f"{model_dir}/{new_model}/data" # Where to download files to
-new_dir(new_model_data_root) # Creates both model folder and data folder
+new_dir(f"{new_model}/data") # Creates both model folder and data folder
 
-print(f"Converting {model_dir}/{old_model} to {model_dir}/{new_model}")
-assert os.path.exists(f"{model_dir}/{old_model}"), "Model does not exist"
+shutil.copy(f"{old_model}/embeddings.hdf5", f"{new_model}/embeddings.hdf5") # Overwritten if exists
+shutil.copy(f"{old_model}/embedders.pytxt", f"{new_model}/embedders.pytxt") # Overwritten if exists
+shutil.copy(f"{old_model}/metadata.csv", f"{new_model}/metadata.old")
 
-shutil.copy(f"{model_dir}/{old_model}/embeddings.hdf5", f"{model_dir}/{new_model}/embeddings.hdf5") # Overwritten if exists
-shutil.copy(f"{model_dir}/{old_model}/embedders.pytxt", f"{model_dir}/{new_model}/embedders.pytxt") # Overwritten if exists
-shutil.copy(f"{model_dir}/{old_model}/metadata.csv", f"{model_dir}/{new_model}/metadata.old")
+# Read original metadata from CSV
+with open(f"{new_model}/metadata.old", "r") as f:
+    X = [row for row in csv.reader(f)]
 
-X = []
+# Revise metadata
+X_revised = []
+for x in X:
+    X_revised.append([f"{str(uuid4())}.jpg"] + x[1:])
+X_revised
 
-# Read data from CSV
-with open(f"{model_dir}/{new_model}/metadata.old", "r") as f:
-    meta = csv.reader(f)
-    for row in meta:
-        X.append(row)
+# Write revised metadata to CSV
+with open(f"{new_model}/metadata.csv", "w") as f:
+    csv.writer(f).writerows(X_revised)
 
-# Truncate
+# Truncate (on the embeddings side, not the metadata side)
+# This means we create filenames for files we do not download
+X_collect = X_revised
 if max_data:
-    X = X[:max_data]
-
-# Generate new filenames
-# Keep order intact – otherwise we can't match to idx
-new_meta = []
-for i, x in enumerate(X):
-    fname = f"{new_model}_{str(uuid4())}.jpg"
-    new_meta.append([fname] + x[1:])
-
-# Write
-with open(f"{model_dir}/{new_model}/metadata.csv", "w") as f:
-    csv.writer(f).writerows(new_meta)
+    embs_file = os.path.join(f"{new_model}/embeddings.hdf5")
+    embs = h5py.File(embs_file, "a")
+    valid_idxs = list(embs["valid_idxs"])
+    # Select the first max_data valid indices
+    truncated_idxs = valid_idxs[:max_data]
+    # Truncate data
+    X_collect = [X[i] for i in truncated_idxs]
+    # Truncate embeddings
+    del embs["valid_idxs"]
+    embs.create_dataset("valid_idxs", compression="lzf", data=np.array(truncated_idxs))
+    embs.close()
 
 # Set up threading
-pbar_success = tqdm(total=len(X), desc="Downloaded")
-pbar_failure = tqdm(total=len(X), desc="Failed")
+pbar_success = tqdm(total=len(X_collect), desc="Downloaded")
+pbar_failure = tqdm(total=len(X_collect), desc="Failed")
 q = Queue()
 l = Lock()
 
+# TODO: This should be a util function that takes a function as a parameter
 # Define and start queue
 def _worker():
     while True:
         try:
-            i, x, fname = q.get()
+            i, x, x_r = q.get()
         except Empty:
             break
         path = x[0]
+        uuid = x_r[0]
         try:
             img = img_from_url(path)
             if resize:
                 img.thumbnail((resize, resize))
-            img.save(os.path.join(new_model_data_root, fname))
+            img.save(f"{new_model}/data/{uuid}")
             success = True
         except:
             success = False
@@ -85,8 +91,10 @@ for i in range(num_workers):
     t.daemon = True
     t.start()
 
-for i, x in enumerate(X):
-    q.put((i, x, new_meta[i][0]))
+for i in range(len(X_collect)):
+    x = X[i]
+    x_r = X_revised[i]
+    q.put((i, x, x_r))
 
 # Cleanup
 q.join()
@@ -94,4 +102,4 @@ pbar_success.close()
 pbar_failure.close()
 
 # Rebuild
-build(X, f"{model_dir}/{new_model}")
+build(new_model)

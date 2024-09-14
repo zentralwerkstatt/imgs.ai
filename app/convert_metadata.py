@@ -1,36 +1,21 @@
 import h5py
 import os
 import csv
-import random
 from tqdm import tqdm
 import json
 
 
-def lencode(row):
-    return json.dumps(row)
-
-def ldecode(string):
-    return json.loads(string)
-
 model_folder = "static/models/Rijksmuseum"
 
-meta_file = os.path.join(model_folder, "metadata.csv")
-old_meta = csv.reader(open(meta_file))
-row_count = sum(1 for row in old_meta)
-old_meta = csv.reader(open(meta_file)) # Open again to go back to start
+with open(os.path.join(model_folder, "metadata.csv")) as f:
+    X = [row for row in csv.reader(f)]
 
-new_meta_file = os.path.join(model_folder, "metadata.hdf5")
-new_meta = h5py.File(new_meta_file, "a")
+meta_file = os.path.join(model_folder, "metadata.hdf5")
+meta = h5py.File(meta_file, "a")
 dtype = h5py.string_dtype(encoding='utf-8')
-new_meta.create_dataset("metadata", (row_count,), dtype=dtype, compression="lzf")
+meta.create_dataset("metadata", (len(X),), dtype=dtype, compression="lzf")
 
-for idx, row in enumerate(tqdm(old_meta, total=row_count)):
-    new_meta["metadata"][idx] = lencode(row)
+for idx, x in enumerate(tqdm(X, total=len(X))):
+    meta["metadata"][idx] = json.dumps(x) # JSON gives us strings
 
-new_meta.close()
-
-# Test
-new_meta = h5py.File(new_meta_file, "r")
-k = random.choice(range(row_count))
-print(ldecode(new_meta["metadata"][k].decode("utf-8")))
-new_meta.close()
+meta.close()

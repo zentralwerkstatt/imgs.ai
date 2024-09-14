@@ -15,6 +15,7 @@ import json
 from annoy import AnnoyIndex
 import logging
 from util import load_img, img_from_url, set_cuda
+import csv
 
 
 # Logging
@@ -23,8 +24,18 @@ log = logging.getLogger()
 log.setLevel(logging.INFO)
 logging.basicConfig(format="%(asctime)s : %(message)s")
 
-def collect_embed(X, data_root, model_folder, num_workers=32):
+def collect_embed(model_folder, num_workers=32, max_data=None):
     device = set_cuda()
+
+    assert os.path.exists(model_folder), "Model folder does not exist"
+    assert os.path.exists(os.path.join(model_folder, "metadata.csv")), "metadata.csv does not exist"
+    assert os.path.exists(os.path.join(model_folder, "embedders.pytxt")), "embedders.pytxt does not exist"
+
+    # Read original metadata from CSV
+    with open(os.path.join(model_folder, "metadata.csv")) as f:
+        X = [row for row in csv.reader(f)]
+    if max_data: 
+        X = X[:max_data]
     
     # Recreate embedders object from description only
     with open(os.path.join(model_folder, "embedders.pytxt")) as f:
@@ -56,13 +67,13 @@ def collect_embed(X, data_root, model_folder, num_workers=32):
                 i, x = q.get()
             except Empty:
                 break
-            path = x[0]
+            path = x[0] # First column is path relative to data folder
             success = False
             try:
                 if path.startswith("http"):
                     img = img_from_url(path)
                 else:
-                    img = load_img(os.path.join(data_root, path))
+                    img = load_img(os.path.join(model_folder, "data", path))
             except:
                 img = None
             if img:
@@ -94,8 +105,17 @@ def collect_embed(X, data_root, model_folder, num_workers=32):
     embs.create_dataset("valid_idxs", compression="lzf", data=np.array(valid_idxs))
     embs.close()
 
-def build(X, model_folder, n_trees=100, private=False):
+def build(model_folder, n_trees=100, private=False):
     config = {}
+
+    assert os.path.exists(model_folder), "Model folder does not exist"
+    assert os.path.exists(os.path.join(model_folder, "metadata.csv")), "metadata.csv does not exist"
+    assert os.path.exists(os.path.join(model_folder, "embedders.pytxt")), "embedders.pytxt does not exist"
+    assert os.path.exists(os.path.join(model_folder, "embeddings.hdf5")), "embeddings.hdf5 does not exist"
+
+    # Read original metadata from CSV
+    with open(os.path.join(model_folder, "metadata.csv")) as f:
+        X = [row for row in csv.reader(f)]
 
     # Recreate embedders object from description only
     with open(os.path.join(model_folder, "embedders.pytxt")) as f:
@@ -115,7 +135,7 @@ def build(X, model_folder, n_trees=100, private=False):
     # Allocate cache
     log.info(f'Allocating cache')
     cache_file = os.path.join(model_folder, "cache.hdf5")
-    cache = h5py.File(cache_file, "w")
+    cache = h5py.File(cache_file, "a")
 
     # Reduce if reducer given
     for emb_type, embedder in embedders.items():
@@ -147,16 +167,6 @@ def build(X, model_folder, n_trees=100, private=False):
             hood_file = os.path.join(model_folder, f"{emb_type.lower()}_{metric}.ann")
             ann.save(hood_file)
 
-    # Align and write metadata
-    log.info(f'Aligning metadata')    
-    meta_file = os.path.join(model_folder, "metadata.hdf5")
-    meta = h5py.File(meta_file, "a")
-    dtype = h5py.string_dtype(encoding='utf-8')
-    meta.create_dataset("metadata", (len(valid_idxs),), dtype=dtype, compression="lzf")
-    for i, idx in enumerate(valid_idxs):
-        # FIXME: This breaks with index out of bounds?
-        meta["metadata"][i] = json.dumps(X[idx]) # JSON gives us strings
-
     # Save fitted reducers
     log.info("Saving reducers")
     for emb_type, embedder in embedders.items():
@@ -169,6 +179,15 @@ def build(X, model_folder, n_trees=100, private=False):
     config_file = os.path.join(model_folder, "config.json")
     with open(config_file, "w") as f:
         json.dump(config, f)
+
+    # Write metadata
+    log.info(f'Aligning metadata')    
+    meta_file = os.path.join(model_folder, "metadata.hdf5")
+    meta = h5py.File(meta_file, "a")
+    dtype = h5py.string_dtype(encoding='utf-8')
+    meta.create_dataset("metadata", (len(X),), dtype=dtype, compression="lzf")
+    for idx, x in enumerate(X):
+        meta["metadata"][idx] = json.dumps(x) # JSON gives us strings
 
     # Cleanup
     embs.close()
