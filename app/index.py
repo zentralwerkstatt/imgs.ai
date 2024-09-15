@@ -1,14 +1,15 @@
 from uuid import uuid4
-from app.util import new_dir, img_from_url
+from app.util import new_dir, img_from_url, load_img
 from app.util import CLIP_text
-from PIL import Image
 import numpy as np
+from flask import flash
 import typing
 from typing import Self
 # Dirty hack to avoid circular imports
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.model import EmbeddingModel
+    from PIL import Image
 
 
 class Index:
@@ -35,7 +36,7 @@ class Index:
     
 
 class UploadIndex(Index):
-    def __init__(self, upload:Image):
+    def __init__(self, upload:"Image"):
         super().__init__()
         self.idx = str(uuid4())
         new_dir(f"app/static/user_content")
@@ -76,10 +77,16 @@ class ModelIndex(Index):
         return model.get_vectors_for_idx(self)[emb_type][metric]
     
     def keep(self) -> UploadIndex:
-        if self.path:
-            return UploadIndex(Image.open(self.path))
-        else:
-            return UploadIndex(img_from_url(self.url))
+        img = None
+        # Try to get actual image, this could fail for a number of reasons
+        try:
+            if self.path:
+                return UploadIndex(load_img(self.path))
+            else:
+                return UploadIndex(img_from_url(self.url))
+        except:
+            flash(f"Could not pin image {self.idx}", "warning")
+            return np.zeros(512) # Has to return something
 
 
 class PromptIndex(Index):

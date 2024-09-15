@@ -57,6 +57,7 @@ def img_from_url(url, max_tries=10):
         except:
             tries += 1
         time.sleep(1)
+    return None
 
 
 def serve_pil_image(img):
@@ -67,7 +68,10 @@ def serve_pil_image(img):
 
 
 def load_img(path):
-    return PIL.Image.open(path).convert("RGB")
+    try:
+        return PIL.Image.open(path).convert("RGB")
+    except:
+        return None
 
 
 def new_dir(folder):
