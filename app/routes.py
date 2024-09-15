@@ -63,7 +63,7 @@ def login():
     return render_template("login.html", title="imgs.ai", form=form)
 
 
-# FIXME: Toggle design not Bootstrap 5 compatible
+# TODO: Toggle design not Bootstrap 5 compatible
 @app.route("/users", methods=["GET", "POST"])
 @login_required
 def users():
@@ -134,35 +134,43 @@ def interface():
 
     if request.method == "POST":
 
-        # Model
-        if "model" in request.form:
-            session.load_model(request.form["model"])
-
         # Upload
-        if "upload" in request.files:
+        # Only present in request if filled
+        if "upload" in request.files and request.files["upload"]:
             file = request.files["upload"]
             if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ["png", "jpg", "jpeg", "gif"]:
                 session.edit_idxs("add_upload", upload=load_img(file))
 
         # Prompt
+        # Only present in request if filled
         if "prompt" in request.form and request.form["prompt"]:
             session.edit_idxs("add_prompt", prompt=request.form["prompt"])
 
         # Idx actions
+        # Only present in request if clicked
         if "action" in request.form:
             session.edit_idxs(request.form["action"], idxs=request.form.getlist("active")) # Button names are actions
 
         # Settings
+        # Must check if different because always present in request
         if "n" in request.form:
-            session.config["n"] = request.form["n"]
+            if request.form["n"] != session.config["n"]:
+                session.edit_config("n", request.form["n"])
+        if "metric" in request.form: # Must check metric first because it depends on emb_type
+            if request.form["metric"] != session.config["metric"]:
+                session.edit_config("metric", request.form["metric"])
         if "emb_type" in request.form:
-            session.config["emb_type"] = request.form["emb_type"]
-        if "metric" in request.form:
-            session.config["metric"] = request.form["metric"]
- 
-    # Get NNs
-    session.compute_nns()
+            if request.form["emb_type"] != session.config["emb_type"]:
+                session.edit_config("emb_type", request.form["emb_type"])
 
+        # Model
+        # Must check if different because always present in request
+        # Must check last because overrides all other settings
+        if request.form["model"] != session.config["model_name"]:
+            session.load_model(request.form["model"])
+
+    session.compute_nns()
+ 
     # Log search
     search_target = f'idxs +{[idx.idx for idx in session.data["pos_idxs"]]}, -{[idx.idx for idx in session.data["neg_idxs"]]}'
     # See https://github.com/mattupstate/flask-security/blob/4049c0620383f42d37950c7a35af5ddd6df0540f/flask_security/utils.py#L65

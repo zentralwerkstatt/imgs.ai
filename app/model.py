@@ -7,11 +7,13 @@ from annoy import AnnoyIndex
 import h5py
 from app.embedders import *
 from sklearn.decomposition import PCA, IncrementalPCA # Used by dynamic imports
+from app.index import Index
+import typing
 
 
 class EmbeddingModel:
 
-    def __init__(self, model_folder):
+    def __init__(self, model_folder:str):
         with open(os.path.join(model_folder, "config.json"), "r") as config: # Must exist
             self.config = json.load(config)
         self.model_folder = model_folder # Relative  
@@ -31,22 +33,30 @@ class EmbeddingModel:
     def __len__(self):
         return int(self.config["model_len"])
 
-    def decode_metadata(self, metadata):
+    def decode_metadata(self, metadata:str) -> list[str]:
         return json.loads(metadata.decode("utf-8"))
 
-    def get_metadata(self, idx):
-        return self.decode_metadata(self.metadata["metadata"][int(idx)]) # Indices are strings
+    def get_metadata(self, idx:Index) -> list[str]:
+        return self.decode_metadata(self.metadata["metadata"][int(idx.idx)]) # Indices are strings
     
-    def get_vectors_for_idx(self, idx):
+    def get_vectors_for_idx(self, idx:Index) -> dict[dict[np.ndarray]]:
         vectors = {}
         for emb_type, emb_type_props in self.config["emb_types"].items():
             vectors[emb_type] = {}
             for metric in emb_type_props["metrics"]:
-                vectors[emb_type][metric] = self.anns[emb_type][metric].get_item_vector(int(idx))  # Indices are strings
+                vectors[emb_type][metric] = self.anns[emb_type][metric].get_item_vector(int(idx.idx))  # Indices are strings
         return vectors
 
-    def get_nns_from_vectors(self, emb_type, n, pos_idxs, neg_idxs, metric, search_k=-1):
+    def get_nns(self, emb_type:str, n:str, pos_idxs:list[Index], neg_idxs:list[Index], metric:str, search_k:int=-1) -> list[str]:
         nns = []
+
+        queries = [str(idx) for idx in [pos_idxs + neg_idxs]] # Indices are strings
+
+        # Convert Index-type objects to vectors
+        pos_idxs = [idx.get_vectors(self, emb_type, metric) for idx in pos_idxs]
+        neg_idxs = [idx.get_vectors(self, emb_type, metric) for idx in neg_idxs]
+
+        n = int(n)
 
         # Do the math
         if pos_idxs or neg_idxs:
@@ -67,28 +77,31 @@ class EmbeddingModel:
                     neg_sum += vector
                 centroid -= neg_sum
 
-                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, int(n), search_k=search_k, include_distances=False)
+                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
 
             elif len(pos_idxs) > 1 and len(neg_idxs) == 0: # Multiple positives
                 vectors = np.array(pos_idxs)
                 centroid = vectors.mean(axis=0)
-                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, int(n), search_k=search_k, include_distances=False)
+                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
 
             elif len(pos_idxs) == 1:  # Single positive
                 vector = np.array(pos_idxs[0])
-                nns = self.anns[emb_type][metric].get_nns_by_vector(vector, int(n), search_k=search_k, include_distances=False)
+                nns = self.anns[emb_type][metric].get_nns_by_vector(vector, n, search_k=search_k, include_distances=False)
 
             else: # Single or multiple negatives, return random
-                nns = np.random.randint(len(self), size=int(n))
+                nns = np.random.randint(len(self), size=n)
 
         else:  # Return random
-            nns = np.random.randint(len(self), size=int(n))
+            nns = np.random.randint(len(self), size=n)
 
-        # Do not remove queries from results as sanity check
+        nns = [str(nn) for nn in nns] # Indices are strings
 
-        return [str(nn) for nn in nns]  # Indices are strings
+        # Remove queries
+        nns = set(nns) - set(queries)
 
-    def transform(self, paths):
+        return nns  
+
+    def transform(self, paths:list[str]) -> dict[dict[np.ndarray]]:
         device = set_cuda()
 
         # Recreate embedders object from description only

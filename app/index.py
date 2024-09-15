@@ -2,32 +2,61 @@ from uuid import uuid4
 from app.util import new_dir, img_from_url
 from app.util import CLIP_text
 from PIL import Image
+import numpy as np
+import typing
+from typing import Self
+# Dirty hack to avoid circular imports
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.model import EmbeddingModel
 
 
 class Index:
 
     def __init__(self):
         self.vectors = {}
+
+    def keep(self) -> Self:
+        return self
             
     # If we want to hash an object (e.g. insert into a dict) we do it by its idx
-    def __hash__(self):
+    def __hash__(self) -> str:
         return hash(self.idx)
     
     # If we want to compare two objects we do it by their idx
-    def __eq__(self, other):
+    def __eq__(self, other:str | Self) -> bool:
         if isinstance(other, str):
             return self.idx == other
         else:
             return self.idx == other.idx
     
-    def __str__(self):
+    def __str__(self) -> str:
         return self.idx
     
+
+class UploadIndex(Index):
+    def __init__(self, upload:Image):
+        super().__init__()
+        self.idx = str(uuid4())
+        new_dir(f"app/static/user_content")
+        self.path = f"app/static/user_content/{self.idx}.jpg"
+        upload.save(self.path)
+        self.url = f"static/user_content/{self.idx}.jpg"
+        self.html = f'<img style="width: 100%;" src="{self.url}" />'
+        self.modal_body = f'<img style="width: 100%;" src="{self.url}" />'
+        self.modal_footer = ""
+
+    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str):
+        if not model.model_name in self.vectors:
+            self.vectors[model.model_name] = model.transform([self.path])
+        return self.vectors[model.model_name][emb_type][0] # Images do not have precomputed NNs and thus no metric
+
+    
 class ModelIndex(Index):
-    def __init__(self, model, idx):
+    def __init__(self, model:"EmbeddingModel", idx:str):
         super().__init__()
         self.idx = idx
-        metadata = model.get_metadata(self.idx)
+        metadata = model.get_metadata(self)
         if metadata[0].startswith("http"):
             self.url = metadata[0]
             self.path = None
@@ -43,39 +72,14 @@ class ModelIndex(Index):
         self.modal_footer = f'<a href="{source}">Source: {source}</a>'
         # TODO: Implement metadata in footer
 
-    def get_vectors(self, model, emb_type, metric):
-        return model.get_vectors_for_idx(self.idx)[emb_type][metric]
+    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
+        return model.get_vectors_for_idx(self)[emb_type][metric]
     
-    def keep(self):
-        print("Keeping")
+    def keep(self) -> UploadIndex:
         if self.path:
             return UploadIndex(Image.open(self.path))
         else:
             return UploadIndex(img_from_url(self.url))
-        
-    
-class UploadIndex(Index):
-    def __init__(self, upload):
-        super().__init__()
-        self.idx = str(uuid4())
-        new_dir(f"app/static/user_content")
-        self.path = f"app/static/user_content/{self.idx}.jpg"
-        upload.save(self.path)
-        self.url = f"static/user_content/{self.idx}.jpg"
-        self.html = f'<img style="width: 100%;" src="{self.url}" />'
-        self.modal_body = f'<img style="width: 100%;" src="{self.url}" />'
-        self.modal_footer = ""
-
-    def get_vectors(self, model, emb_type, metric):
-        if not model.model_name in self.vectors:
-            self.vectors[model.model_name] = model.transform([self.path])
-        return self.vectors[model.model_name][emb_type][0] # Images do not have precomputed NNs and thus no metric
-    
-    def get_image(self):
-        return Image.open(self.path)
-    
-    def keep(self):
-        return self
 
 
 class PromptIndex(Index):
@@ -86,20 +90,13 @@ class PromptIndex(Index):
         self.url = None
         self.path = None
         self.vectors = CLIP_text(self.prompt)[0]
-        # TODO: Layout for prompt
-        self.html = f'<span>{self.prompt}</span>'
+        self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span>{self.prompt}</span></div>'
         # TODO: Implement modal_body and modal_footer for prompt
 
-    def get_vectors(self, model, emb_type, metric):
+    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
         if emb_type.startswith("clip"):
-            self.html = f'<span>{self.prompt}</span>'
+            self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span>{self.prompt}</span></div>'
             return self.vectors
         else:
-            # FIXME: Color change does not work
-            self.html = f'<span style="color: grey">{self.prompt}</span>'
-            return None
-        
-    def keep(self):
-        return self
-
-
+            self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span><s>{self.prompt}</s></span></div>'
+            return np.zeros(512) # Has to return something
