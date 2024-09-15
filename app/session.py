@@ -30,7 +30,7 @@ class Session:
 
     def load_model(self, model_name):
         self.config["model_name"] = model_name
-        self.config["model_names"] = [model_name for model_name in models.keys() if models[model_name].config["private"] == self.config["private"]]
+        self.config["model_names"] = [model_name for model_name in models.keys() if models[model_name].config["private"] == self.config["private"] or not models[model_name].config["private"]]
         self.config["model_len"] = len(models[self.config["model_name"]])
         self.config["emb_types"] = list(models[self.config["model_name"]].config["emb_types"].keys())
         self.config["emb_type"] = self.config["emb_types"][0] # ALways put CLIP first in config.json

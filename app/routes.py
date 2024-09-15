@@ -166,8 +166,9 @@ def interface():
         # Model
         # Must check if different because always present in request
         # Must check last because overrides all other settings
-        if request.form["model"] != session.config["model_name"]:
-            session.load_model(request.form["model"])
+        if "model" in request.form:
+            if request.form["model"] != session.config["model_name"]:
+                session.load_model(request.form["model"])
 
     session.compute_nns()
  

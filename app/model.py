@@ -46,55 +46,43 @@ class EmbeddingModel:
             for metric in emb_type_props["metrics"]:
                 vectors[emb_type][metric] = self.anns[emb_type][metric].get_item_vector(int(idx.idx))  # Indices are strings
         return vectors
+    
+    # Avoids calling get_vectors twice, once to check of returns none and then to get actual return value
+    # See https://stackoverflow.com/questions/73860685/python-list-comprehension-ignore-none-results
+    def vector_generator(self, emb_type:str, metric:str, idxs: list[Index]) -> typing.Generator[np.ndarray, None, None]:
+        for idx in idxs:
+            vectors = idx.get_vectors(self, emb_type, metric)
+            if vectors is not None:
+                yield vectors
 
-    def get_nns(self, emb_type:str, n:str, pos_idxs:list[Index], neg_idxs:list[Index], metric:str, search_k:int=-1) -> list[str]:
+    def get_nns(self, emb_type:str, metric:str, n:str, pos_idxs:list[Index], neg_idxs:list[Index], search_k:int=-1) -> list[str]:
         nns = []
 
         queries = [str(idx) for idx in [pos_idxs + neg_idxs]] # Indices are strings
 
         # Convert Index-type objects to vectors
-        pos_idxs = [idx.get_vectors(self, emb_type, metric) for idx in pos_idxs]
-        neg_idxs = [idx.get_vectors(self, emb_type, metric) for idx in neg_idxs]
+        pos_idxs = list(self.vector_generator(emb_type, metric, pos_idxs))
+        neg_idxs = list(self.vector_generator(emb_type, metric, neg_idxs))
 
         n = int(n)
 
         # Do the math
-        if pos_idxs or neg_idxs:
-
-            if len(pos_idxs) > 0 and len(neg_idxs) > 0:  # Arithmetic
-                vectors = np.array(pos_idxs + neg_idxs)
-                centroid = vectors.mean(axis=0)
-                pos_vectors = np.array(pos_idxs)
-                neg_vectors = np.array(neg_idxs)
-
-                pos_sum = 0
-                for vector in pos_vectors:
-                    pos_sum += vector
-                centroid += pos_sum
-
-                neg_sum = 0
-                for vector in neg_vectors:
-                    neg_sum += vector
-                centroid -= neg_sum
-
-                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
-
-            elif len(pos_idxs) > 1 and len(neg_idxs) == 0: # Multiple positives
-                vectors = np.array(pos_idxs)
-                centroid = vectors.mean(axis=0)
-                nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
-
-            elif len(pos_idxs) == 1:  # Single positive
-                vector = np.array(pos_idxs[0])
-                nns = self.anns[emb_type][metric].get_nns_by_vector(vector, n, search_k=search_k, include_distances=False)
-
-            else: # Single or multiple negatives, return random
-                nns = np.random.randint(len(self), size=n)
-
-        else:  # Return random
+        if len(pos_idxs) >= 1 and len(neg_idxs) > 0: # Single or multiple positives and negatives
+            pos_vectors = np.array(pos_idxs)
+            neg_vectors = np.array(neg_idxs)
+            pos_centroid = pos_vectors.mean(axis=0)
+            neg_centroid = neg_vectors.mean(axis=0)
+            centroid = pos_centroid - neg_centroid
+            nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+        elif len(pos_idxs) >= 1 and len(neg_idxs) == 0: # Single or multiple positives
+            vectors = np.array(pos_idxs)
+            centroid = vectors.mean(axis=0)
+            nns = self.anns[emb_type][metric].get_nns_by_vector(centroid, n, search_k=search_k, include_distances=False)
+        else: # Single or multiple negatives, return random
             nns = np.random.randint(len(self), size=n)
 
-        nns = [str(nn) for nn in nns] # Indices are strings
+        # Indices are strings
+        nns = [str(nn) for nn in nns] 
 
         # Remove queries
         nns = set(nns) - set(queries)
@@ -102,7 +90,8 @@ class EmbeddingModel:
         return nns  
 
     def transform(self, paths:list[str]) -> dict[dict[np.ndarray]]:
-        device = set_cuda()
+        # device = set_cuda()
+        device = "cpu"
 
         # Recreate embedders object from description only
         with open(os.path.join(self.model_folder, "embedders.pytxt")) as f: # Must exist

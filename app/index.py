@@ -2,7 +2,6 @@ from uuid import uuid4
 from app.util import new_dir, img_from_url, load_img
 from app.util import CLIP_text
 import numpy as np
-from flask import flash
 import typing
 from typing import Self
 # Dirty hack to avoid circular imports
@@ -47,10 +46,10 @@ class UploadIndex(Index):
         self.modal_body = f'<img style="width: 100%;" src="{self.url}" />'
         self.modal_footer = ""
 
-    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str):
+    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
         if not model.model_name in self.vectors:
             self.vectors[model.model_name] = model.transform([self.path])
-        return self.vectors[model.model_name][emb_type][0] # Images do not have precomputed NNs and thus no metric
+        return self.vectors[model.model_name][emb_type][0] # Images have no metric
 
     
 class ModelIndex(Index):
@@ -76,7 +75,7 @@ class ModelIndex(Index):
     def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
         return model.get_vectors_for_idx(self)[emb_type][metric]
     
-    def keep(self) -> UploadIndex:
+    def keep(self) -> UploadIndex | None:
         img = None
         # Try to get actual image, this could fail for a number of reasons
         try:
@@ -85,8 +84,7 @@ class ModelIndex(Index):
             else:
                 return UploadIndex(img_from_url(self.url))
         except:
-            flash(f"Could not pin image {self.idx}", "warning")
-            return np.zeros(512) # Has to return something
+            return None
 
 
 class PromptIndex(Index):
@@ -100,10 +98,10 @@ class PromptIndex(Index):
         self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span>{self.prompt}</span></div>'
         # TODO: Implement modal_body and modal_footer for prompt
 
-    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
+    def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray | None:
         if emb_type.startswith("clip"):
             self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span>{self.prompt}</span></div>'
             return self.vectors
         else:
             self.html = f'<div class="text-center" style="min-height: 50px; border: 1px dotted"><span><s>{self.prompt}</s></span></div>'
-            return np.zeros(512) # Has to return something
+            return None # Filtered in the model
