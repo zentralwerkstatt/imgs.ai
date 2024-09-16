@@ -5,8 +5,7 @@ from app.forms import SignupForm, LoginForm
 from app import app, log, db, login_manager, models
 from app.user import User, create_user
 from app.session import Session
-from app import Config
-import time
+from app.util import load_img
 import os
 from markdown import markdown
 
@@ -18,7 +17,7 @@ def from_md(fname, title):
     path = os.path.join(app.root_path, app.static_folder, "md", fname)
     with open(path, "r") as f:
         md = header + markdown(f.read())
-    return render_template("md.html", title="imgs.ai", Config=Config, md=md)
+    return render_template("md.html", title="imgs.ai", md=md)
 
 
 @login_manager.user_loader
@@ -37,7 +36,7 @@ def signup():
         else:
             user = create_user(form)
             flash("Thank you for requesting access, you will hear from us in the next 24 hours.", "info")
-    return render_template("signup.html", title="imgs.ai", Config=Config, form=form)
+    return render_template("signup.html", title="imgs.ai", form=form)
 '''
 
 
@@ -54,17 +53,17 @@ def login():
             if user.access:
                 log.info(f"{user.username} logged in")
                 login_user(user)
-                session.public = False
+                session.config["private"] = True
                 session.store(flask_session)
                 return redirect(url_for("interface"))
             flash("Access not granted yet!", "warning")
         else:
             flash("Invalid username/password combination")
         return redirect(url_for("login"))
-    return render_template("login.html", title="imgs.ai", Config=Config, form=form)
+    return render_template("login.html", title="imgs.ai", form=form)
 
 
-# FIXME: Toggle design not Bootstrap 5 compatible
+# TODO: Toggle design not Bootstrap 5 compatible
 @app.route("/users", methods=["GET", "POST"])
 @login_required
 def users():
@@ -74,7 +73,7 @@ def users():
                 user = User.query.get(int(i))
                 user.access = bool(int(access))
                 db.session.commit()
-        return render_template("users.html", title="imgs.ai", Config=Config, users=User.query.all(),)
+        return render_template("users.html", title="imgs.ai", users=User.query.all(),)
     else:
         abort(403)
 
@@ -90,7 +89,7 @@ def logs():
             return markdown(md, extensions=['fenced_code', 'codehilite'])
         
         with(open("app/static/log.log", "r")) as f:
-            return render_template("md.html", title="imgs.ai", Config=Config, md=to_md(f.readlines()))    
+            return render_template("md.html", title="imgs.ai", md=to_md(f.readlines()))    
     else:
         abort(403)
 
@@ -113,6 +112,10 @@ def imprint():
     return from_md("imprint", "Imprint")
 
 
+# TODO: Help page
+
+
+# TODO: Move dataset descriptions to readme in dataset folder, collect from there
 @app.route("/datasets_public")
 def datasets_public():
     return from_md("datasets_public", "Datasets")
@@ -122,120 +125,67 @@ def datasets_public():
 @login_required
 def datasets_private():
     return from_md("datasets_private", "Datasets")
-    
-
-@app.route("/full/<idx>")
-def full(idx):
-    session = Session(flask_session)
-    # FIXME: If previous action was selection, coming back from redirect attempts to POST and triggers "form resubmission message"
-    return redirect(session.get_url(idx), code=302)
-
-
-@app.route("/source/<idx>")
-def source(idx):
-    session = Session(flask_session)
-    # Metadata is guaranteed for all non-uploaded files
-    # See make_model in train.py
-    if not idx.startswith("upload") and session.get_metadata(idx)[1]: # Has filled URL field        
-        return redirect(session.get_metadata(idx)[1], code=302)
-    else:
-        flash("No source available for selected image", "info")
-        return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
 
 
 # FIXME: CORS errors because servers do not always send access-control-allow-origin headers (mostly MoMA), potential solution: local dataset
-# TODO: Help page
 @app.route("/interface", methods=["GET", "POST"])
 def interface():
     session = Session(flask_session)
 
     if request.method == "POST":
 
-        # Uploads
-        file = request.files["file"]
-        if file.filename and '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ["png", "jpg", "jpeg", "gif"]:
-            try:
-                session.extend([file])
-            except:
-                flash("Could not create embeddings from uploaded image", "warning")
-                pass
+        # Upload
+        # Only present in request if filled
+        if "upload" in request.files and request.files["upload"]:
+            file = request.files["upload"]
+            if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ["png", "jpg", "jpeg", "gif"]:
+                session.edit_idxs("add_upload", upload=load_img(file))
+
+        # Prompt
+        # Only present in request if filled
+        if "prompt" in request.form and request.form["prompt"]:
+            session.edit_idxs("add_prompt", prompt=request.form["prompt"])
+
+        # Idx actions
+        # Only present in request if clicked
+        if "action" in request.form:
+            session.edit_idxs(request.form["action"], idxs=request.form.getlist("active")) # Button names are actions
 
         # Settings
+        # Must check if different because always present in request
         if "n" in request.form:
-            session.n = request.form["n"]
+            if request.form["n"] != session.config["n"]:
+                session.edit_config("n", request.form["n"])
+        if "metric" in request.form: # Must check metric first because it depends on emb_type
+            if request.form["metric"] != session.config["metric"]:
+                session.edit_config("metric", request.form["metric"])
         if "emb_type" in request.form:
-            session.emb_type = request.form["emb_type"]
-            session.metrics = models[session.model].config["emb_types"][session.emb_type]["metrics"]
-        if "metric" in request.form:
-            session.metric = request.form["metric"] if request.form["metric"] in session.metrics else session.metrics[0]
-        if "size" in request.form:
-            session.size = request.form["size"]
-
-        # Actions
-        if "btn" in request.form:
-            active = set(request.form.getlist("active"))
-            if request.form["btn"] == "Positive":
-                session.pos_idxs = list(set(session.pos_idxs) | active) # Union of sets
-                session.neg_idxs = list(set(session.neg_idxs) - active)  # Difference of sets
-
-            elif request.form["btn"] == "Remove":
-                session.pos_idxs = list(set(session.pos_idxs) - active)  # Difference of sets
-                session.neg_idxs = list(set(session.neg_idxs) - active)  # Difference of sets
-
-            elif request.form["btn"] == "Negative":
-                session.neg_idxs = list(set(session.neg_idxs) | active)  # Union of sets
-                session.pos_idxs = list(set(session.pos_idxs) - active)  # Difference of sets
-
-            elif request.form["btn"] == "Clear":
-                session.neg_idxs = []
-                session.pos_idxs = []
-                session.res_idxs = []
+            if request.form["emb_type"] != session.config["emb_type"]:
+                session.edit_config("emb_type", request.form["emb_type"])
 
         # Model
-        # FIXME: Cannot extend from MoMA dataset only?
+        # Must check if different because always present in request
+        # Must check last because overrides all other settings
         if "model" in request.form:
-            if session.model != request.form["model"]: # Only reload and reset if model changed
-                try:
-                    session.load_model(request.form["model"], pin_idxs=session.pos_idxs) # Keep all positive queries
-                except:
-                    flash("Could not create embeddings from pinned images", "warning")
-                    session.load_model(request.form["model"]) # Do not keep queries
+            if request.form["model"] != session.config["model_name"]:
+                session.load_model(request.form["model"])
 
-        # CLIP
-        # TODO: CLIP prompts become "images" that can be kept, removed, or turned negative
-        session.clip_prompt = ""
-        if session.emb_type.startswith("clip"):
-            if "clip_prompt" in request.form and request.form["clip_prompt"]:
-                session.clip_prompt = request.form["clip_prompt"]
-
-    search_target = f"idxs +{session.pos_idxs}, -{session.neg_idxs}"
-    
-    if session.clip_prompt: 
-        search_target = f"'{session.clip_prompt}'"
-
-    if len(session.neg_idxs) > 0 and len(session.pos_idxs) == 0 and not session.clip_prompt:
-        flash("Cannot have negative queries without positive queries", "warning")
-        session.neg_idxs = []
+    session.compute_nns()
  
-    # Get NNs
-    start = time.process_time()
-    session.get_nns()
-
+    # Log search
+    search_target = f'idxs +{[idx.idx for idx in session.data["pos_idxs"]]}, -{[idx.idx for idx in session.data["neg_idxs"]]}'
     # See https://github.com/mattupstate/flask-security/blob/4049c0620383f42d37950c7a35af5ddd6df0540f/flask_security/utils.py#L65
     if 'X-Forwarded-For' in request.headers:
         ip = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
     else:
         ip = request.remote_addr or 'untrackable'
-    score = round(time.process_time() - start, 3)
     if isinstance(current_user, AnonymousUserMixin):
         user = "Anonymous"
     else:
         user = current_user
-    log.info(
-        f"{ip} {user} searched for {search_target} in {session.model}, completed in {score}s, returning {len(session.res_idxs)} results"
-    )
+    log.info(f'{ip} {user} searched for {search_target} in {session.config["model_name"]}, returning {len(session.data["res_idxs"])} results')
 
     # Store in cookie
     session.store(flask_session)
 
-    return render_template("interface.html", title="imgs.ai", session=session, Config=Config)
+    return render_template("interface.html", title="imgs.ai", session=session)

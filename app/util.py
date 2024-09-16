@@ -16,7 +16,12 @@ import pathlib
 
 
 def set_cuda():
-    device = "cuda" if t.cuda.is_available() else "cpu"
+    device = "cpu"
+    if t.cuda.is_available():
+        device = "cuda"
+    if t.backends.mps.is_available():
+        if t.backends.mps.is_built():
+            device = "mps"
     return device
 
 
@@ -52,31 +57,7 @@ def img_from_url(url, max_tries=10):
         except:
             tries += 1
         time.sleep(1)
-
-
-def save_imgs_to(imgs, prefix, folder):    
-    new_dir(folder)
-    paths = []
-    idxs = []
-    for img in imgs:
-        if isinstance(img, str): # URL or file path
-            if img.startswith("http"):
-                img = img_from_url(img)
-            else:
-                img = PIL.Image.open(img).convert("RGB")
-        else: # Data stream
-            stream = BytesIO(img.read())
-            img = PIL.Image.open(stream).convert("RGB")
-        idx = f"{prefix}_{str(uuid4())}.jpg"
-        path = str(os.path.join(folder, idx))
-        img.save(path)
-        paths.append(path)
-        idxs.append(idx)
-    return paths, idxs
-
-
-def sample_range(n, k):
-    return sample(list(range(n)), k=k)
+    return None
 
 
 def serve_pil_image(img):
@@ -87,11 +68,10 @@ def serve_pil_image(img):
 
 
 def load_img(path):
-    return PIL.Image.open(path).convert("RGB")
-
-
-def sort_dict(d):
-    return {k: v for k, v in sorted(d.items(), key=lambda item: item[1])}
+    try:
+        return PIL.Image.open(path).convert("RGB")
+    except:
+        return None
 
 
 def new_dir(folder):

@@ -1,50 +1,25 @@
-from embedders import Embedder_CLIP_ViT, Embedder_Poses, Embedder_Raw, Embedder_VGG19
-from sklearn.decomposition import IncrementalPCA
-import csv
-from train import train
-import os
-from util import get_current_dir, get_parent_dir, new_dir
+from train import collect_embed, build
 
 
-# FIXME: revert to embedders.pytxt as the main application expects it
-# Choose embedders and reducers, see train.py
 """
+To train:
+- Create a new model folder under static/models
+- Create a new embedders.pytxt that contains a version of the following string
 embedders = {
-    "vgg19": Embedder_VGG19(reducer=IncrementalPCA(n_components=512)),
-    "raw": Embedder_Raw(reducer=IncrementalPCA(n_components=512)),
-    "clip_vit": Embedder_CLIP_ViT(),
-    "poses": Embedder_Poses()
-}
+    'vgg19': Embedder_VGG19(reducer=IncrementalPCA(n_components=512)),
+    'raw': Embedder_Raw(reducer=IncrementalPCA(n_components=512)),
+    'clip_vit': Embedder_CLIP_ViT(),
+    'poses': Embedder_Poses()
+} 
+- Move a valid metadata.csv to the new model folder, structure:
+relative path to image or image url (mandatory), source url (optional), metadata column (optional), ..., metadata column (optional)
+- Run this script
 """
-embedders = {
-    "clip_vit": Embedder_CLIP_ViT(),
-}
-data_root = "/data/dev.imgs.ai/ImageNet" # CSV file or folder
-model_name = "ImageNet10K"
-model_status = "private"
-max_data = 10000 # Limit to max_data images (useful for testing purposes)
 
-X = []
+model_folder = "static/models/Harvard" # Must have /data folder if local
+max_data = None # Limit to max_data images (useful for testing purposes)
+private = False # Whether the model is private
+# For additional settings see train.py
 
-if data_root.endswith(".csv"): # CSV
-    with open(data_root, "r") as f:
-        meta = csv.reader(f)
-        for row in meta:
-            X.append(row)
-    data_root = None
-else: # Not CSV
-    for root, _, files in os.walk(data_root):
-        for fname in files:
-            X.append([os.path.relpath(os.path.join(root, fname), start=data_root), "", None])
-    
-if max_data: X = X[:max_data]
-
-model_folder = f"{get_parent_dir(get_current_dir())}/models/{model_status}/{model_name}"
-new_dir(model_folder)
-
-train(
-    X=X,
-    data_root=data_root, 
-    model_folder=model_folder,
-    embedders=embedders
-)
+collect_embed(model_folder, max_data=max_data)
+build(model_folder, private=private)

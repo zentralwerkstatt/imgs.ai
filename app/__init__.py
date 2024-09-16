@@ -1,5 +1,4 @@
 import logging
-import sys
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -8,8 +7,8 @@ from flask_login import LoginManager
 from flask_cors import CORS
 from flask_bootstrap import Bootstrap5
 from app.model import EmbeddingModel
-from datetime import date
-import importlib
+from app.jar import Jar
+
 
 # Logging
 logging.captureWarnings(True)
@@ -20,14 +19,18 @@ formatter = logging.Formatter("%(asctime)s : %(message)s", "[%d/%b/%Y:%H:%M:%S %
 file_handler.setFormatter(formatter)
 log.addHandler(file_handler)
 
-config_file = os.getenv('IMGS_CONFIG')
-log.info(f'Using config: {config_file}')
-config_module = importlib.import_module(config_file, package=None)
-Config = config_module.Config
-
 # Start app
 app = Flask(__name__)
-app.config.from_object(Config)
+
+# Config
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:////Users/fabianoffert/git/imgs.ai/users.db" # Absolute
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SESSION_COOKIE_SECURE"] = False # Activate in production
+app.config["REMEMBER_COOKIE_SECURE"] = False # Activate in production
+app.config["DEFAULT_USERNAME"] = "hi@imgs.ai" # Change in production
+app.config["DEFAULT_EMAIL"] = "hi@imgs.ai" # Change in production
+app.config["DEFAULT_PASSWORD"] = "hi@imgs.ai" # Change in production
 
 # Plugins
 Bootstrap5(app)  # Bootstrap
@@ -40,17 +43,14 @@ login_manager.login_message_category = "warning"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Models
-models = {}
 # Pre-load both public and private models
-log.info(f"Loading private models {Config.MODEL_NAMES_PRIVATE} and public models {Config.MODEL_NAMES_PUBLIC}")
-for model in Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC:
-    models[model] = EmbeddingModel()
-    sub = "public"
-    if model in Config.MODEL_NAMES_PRIVATE: sub = "private" 
-    MODEL_PATH = os.path.join(Config.MODELS_PATH, sub, model)
-    if os.path.isfile(os.path.join(MODEL_PATH, 'config.json')):
-        models[model].load(MODEL_PATH)
+models = {}
+for model in next(os.walk("app/static/models"))[1]:
+    log.info(f"Loading model {model}")
+    models[model] = EmbeddingModel(f"app/static/models/{model}")
+
+# "Redis"
+jar = Jar("app/static/user_content/sessions")
 
 from app import user, routes
 
@@ -58,7 +58,7 @@ from app import user, routes
 if not os.path.isfile("users.db"):
     with app.app_context():
         db.create_all()
-        default_user = user.User(username=Config.DEFAULT_USERNAME, email=Config.DEFAULT_EMAIL, access=True)
-        default_user.set_password(Config.DEFAULT_PASSWORD)
+        default_user = user.User(username=app.config["DEFAULT_USERNAME"], email=app.config["DEFAULT_EMAIL"], access=True)
+        default_user.set_password(app.config["DEFAULT_PASSWORD"])
         db.session.add(default_user)
         db.session.commit()

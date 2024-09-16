@@ -6,7 +6,7 @@
 
 	<!-- Query Images -->
 	<div class="row">
-		{% if session.pos_idxs %}
+		{% if session.data["pos_idxs"] %}
 		<div class="col-6">
 			<div class="card">
 				<div class="card-header text-center">
@@ -14,14 +14,17 @@
 				</div>
 				<div class="card-body">
 					<div class="row grid">	
-						{% for idx in session.pos_idxs %}
-						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
-							<img style="width: 100%; " src="{{ session.get_url(idx) }}" />				
+						{% for idx in session.data["pos_idxs"] %}
+						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx.idx }}" id="{{ idx.idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
+							{{ idx.html|safe }}				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
 										<div class="modal-body justify-content-center">
-											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+											{{ idx.modal_body|safe }}
+										</div>
+										<div class="modal-footer justify-content-center">
+											{{ idx.modal_footer|safe }}
 										</div>
 									</div>
 								</div>
@@ -33,7 +36,7 @@
 			</div>
 		</div>
 		{% endif %}
-		{% if session.neg_idxs %}
+		{% if session.data["neg_idxs"] %}
 		<div class="col-6">
 			<div class="card">
 				<div class="card-header text-center">
@@ -41,14 +44,17 @@
 				</div>
 				<div class="card-body">
 					<div class="row grid">	
-						{% for idx in session.neg_idxs %}
-						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
-							<img style="width: 100%; " src="{{ session.get_url(idx) }}" />				
+						{% for idx in session.data["neg_idxs"] %}
+						<div class="col-lg-2 col-md-4 col-sm-6 col-6 px-0 py-0 item" value="{{ idx.idx }}" id="{{ idx.idx }}" onclick="$(this).toggleClass('active');" onerror="$(this).hide();" ondblclick="$('.modal', this).modal('toggle');">
+							{{ idx.html|safe }}				
 							<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 								<div class="modal-dialog">
 									<div class="modal-content">
 										<div class="modal-body justify-content-center">
-											<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+											{{ idx.modal_body|safe }}
+										</div>
+										<div class="modal-footer justify-content-center">
+											{{ idx.modal_footer|safe }}
 										</div>
 									</div>
 								</div>
@@ -71,49 +77,48 @@
 				<select multiple hidden id="active" name="active"></select>
 
 				<div class="col-auto">
-					<select class="form-select" id="n" name="n" onchange="this.form.submit();" {{ 'disabled' if session.public }}>
-						{% for n in Config.NS %}
-						<option {{ 'selected' if session.n==n }} value="{{ n }}">{{n}}</option>
+					<select class="form-select" id="n" name="n" onchange="this.form.submit();" {{ "disabled" if not session.config["private"] }}>
+						{% for n in session.config["ns"] %}
+						<option {{ "selected" if session.config["n"]==n }} value="{{ n }}">{{n}}</option>
 						{% endfor %}
 					</select>
 				</div>
 
 				<div class="col-auto">
-					<span class="form-text">of {{ session.model_len }} in</span>
+					<span class="form-text">of {{ session.config["model_len"] }} in</span>
 				</div>
 
 				<div class="col-auto">
 					<select class="form-select" id="model" name="model" onchange="this.form.submit();">
-						{% set  model_names = Config.MODEL_NAMES_PUBLIC if session.public else Config.MODEL_NAMES_PRIVATE + Config.MODEL_NAMES_PUBLIC %}
-						{% for model in model_names %}
-						<option {{ 'selected' if session.model==model }} value="{{ model }}">{{ model }}</option>
+						{% for model_name in session.config["model_names"] %}
+						<option {{ "selected" if session.config["model_name"]==model_name }} value="{{ model_name }}">{{ model_name }}</option>
 						{% endfor %}
 					</select>
 				</div>
 
 				<div class="col-auto">
-					<button class="btn btn-light" type="submit" name="btn" value="Positive" onclick="set_active();">&#x2b;</button>
+					<button class="btn btn-light" type="submit" name="action" value="add_pos" onclick="set_active();">&#x2b;</button>
 				</div>
 
 				<div class="col-auto">
-					<button class="btn btn-light" type="submit" name="btn" value="Negative" onclick="set_active();">&#8722;</button>
+					<button class="btn btn-light" type="submit" name="action" value="add_neg" onclick="set_active();">&#8722;</button>
 				</div>
 
 				<div class="col-auto">
-					<button class="btn btn-light" type="submit" name="btn" value="Remove" onclick="set_active();">Remove</button>
+					<button class="btn btn-light" type="submit" name="action" value="remove" onclick="set_active();">Remove</button>
 				</div>
 
 				<div class="col-auto">
-					<button class="btn btn-light" type="submit" name="btn" value="Clear">Clear</button>
+					<button class="btn btn-light" type="submit" name="action" value="clear">Clear</button>
 				</div>
 				
-				{% if session.emb_type.startswith("clip"): %}
+				{% if session.config["emb_type"].startswith("clip"): %}
 				<div class="col-auto">
-					<input type="text" type="submit" class="form-control" id="clip_prompt" name="clip_prompt" placeholder="{{ session.clip_prompt if session.clip_prompt else 'CLIP Prompt' }}" />
+					<input type="text" type="submit" class="form-control" name="prompt" placeholder="CLIP Prompt" />
 				</div>
 
 				<div class="col-auto">
-					<button class="btn btn-light" type="submit" name="btn" value="Go">Go</button>
+					<button class="btn btn-light" type="submit">Go</button>
 				</div>
 				{% endif %}
 
@@ -127,25 +132,21 @@
 				<div class="row pb-3 gy-2 gx-2 mx-auto align-items-center justify-content-center">
 
 					<div class="col-auto">
-						<input class="form-control" type="file" name="file" />
-					</div>
-
-					<div class="col-auto">
-						<button class="btn btn-light" type="file" onclick="this.form.submit()" {{ 'disabled' if session.public }}>Upload</button>
+						<input class="form-control" type="file" name="upload" onchange="this.form.submit();" {{ "disabled" if not session.config["private"] }}/>
 					</div>
 
 					<div class="col-auto">
 						<select class="form-select" id="emb_type" name="emb_type" onchange="this.form.submit();">
-							{% for emb_type in session.emb_types %}
-							<option {{ "selected" if session.emb_type==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
+							{% for emb_type in session.config["emb_types"] %}
+							<option {{ "selected" if session.config["emb_type"]==emb_type }} value="{{ emb_type }}">{{ emb_type }}</option>
 							{% endfor %}
 						</select>
 					</div>
 
 					<div class="col-auto">
 						<select class="form-select" id="metric" name="metric" onchange="this.form.submit();">
-							{% for metric in session.metrics %}
-							<option {{ "selected" if session.metric==metric }} value="{{ metric }}">{{ metric }}</option>
+							{% for metric in session.config["metrics"] %}
+							<option {{ "selected" if session.config["metric"]==metric }} value="{{ metric }}">{{ metric }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -157,14 +158,17 @@
 
 	<!-- Search results -->
 	<div class="row grid">	
-		{% for idx in session.res_idxs %}
-		<div class="col-lg-1 col-md-2 col-sm-4 col-4 px-0 py-0 item" value="{{ idx }}" id="{{ idx }}" onclick="$(this).toggleClass('active');" onerror="this.hide();" ondblclick="$('.modal', this).modal('toggle');">
-			<img style="width: 100%;" src="{{ session.get_url(idx) }}" />				
+		{% for idx in session.data["res_idxs"] %}
+		<div class="col-lg-1 col-md-2 col-sm-4 col-4 px-0 py-0 item" value="{{ idx.idx }}" id="{{ idx.idx }}" onclick="$(this).toggleClass('active');" onerror="this.hide();" ondblclick="$('.modal', this).modal('toggle');">
+			{{ idx.html|safe }}				
 			<div class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-body justify-content-center">
-							<a href="/source/{{ idx }}"><img style="width: 100%" src="/full/{{ idx }}" /></a>
+							{{ idx.modal_body|safe }}
+						</div>
+						<div class="modal-footer justify-content-center">
+							{{ idx.modal_footer|safe }}
 						</div>
 					</div>
 				</div>
@@ -177,7 +181,7 @@
 
 <script>	
 
-	$(".grid").imagesLoaded().progress( function() {
+	$(".item").imagesLoaded( function() {
 		console.log("Images loaded");
   		$(".grid").masonry({
 			percentPosition: true})
