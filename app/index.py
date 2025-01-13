@@ -69,7 +69,7 @@ class ModelIndex(Index):
             source = "#"
         self.html = f'<img style="width: 100%;" src="{self.url}" />'
         self.modal_body = f'<img style="width: 100%;" src="{self.url}" />'
-        self.modal_footer = f'<a href="{source}">Source: {source}</a>'
+        self.modal_footer = f'<a href="{source}">{source}</a>'
         # TODO: Implement metadata in footer
 
     def get_vectors(self, model:"EmbeddingModel", emb_type:str, metric:str) -> np.ndarray:
