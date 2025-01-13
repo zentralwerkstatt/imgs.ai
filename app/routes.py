@@ -55,6 +55,7 @@ def login():
                 login_user(user)
                 session.config["private"] = True
                 session.store(flask_session)
+                session.load_model("Rijksmuseum") # Default model
                 return redirect(url_for("interface"))
             flash("Access not granted yet!", "warning")
         else:
