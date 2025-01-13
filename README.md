@@ -11,13 +11,13 @@ imgs.ai is developed by [Fabian Offert](https://zentralwerkstatt.org), with cont
 Only MacOS and Linux environments are currently supported.
 
 1. Download and install the [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (preferred) package manager.
-2. Create a Python 3.8 conda environment with `conda create --yes -n imgs.ai python=3.11` and activate it with `conda activate imgs.ai`.
+2. Create a Python 3.11 conda environment with `conda create --yes -n imgs.ai python=3.11` and activate it with `conda activate imgs.ai`.
 3. Clone or download the repository and run the [install.sh](install.sh) shell script with your preferred shell. If you would like to install with GPU support, add the following parameter: `pytorch-cuda=12.1`, where the version number is the version of CUDA you would like PyTorch to use (this depends on your GPU and the PyTorch version, see https://pytorch.org/ for more information).
 4. To start imgs.ai, run the [run.sh](run.sh) shell script with your preferred shell.
 5. Open a web browser and navigate to `localhost:5000` to see the interface. 
 6. To access private models and use the upload function, a default user with full access is set up, username: `hi@imgs.ai`, password: `hi@imgs.ai`.
 
-**Never run imgs.ai in a production environment unless you have adapted [config.py](config.py) and know what you are doing.**
+**Never run imgs.ai in a production environment unless you have adapted [__init.py__](app/__init__.py) and know what you are doing.**
 
 We provide the Rijksmuseum dataset (embeddings only) for testing purposes. The dataset is trained on nearly 400,000 works in the [Rijksmuseum](https://www.rijksmuseum.nl) collection. This is a live dataset, images are pulled from the Rijksmuseum servers on request. Right-click an image to go to the source website on the Rijksmuseum servers.
 
