@@ -9,10 +9,23 @@ from io import BytesIO
 import requests
 import time
 import random
-from flask import send_file
+from flask import send_file, current_app
 from io import StringIO
 import clip
 import pathlib
+import resend
+
+
+def send(to, body, subject="imgs.ai"):
+    if current_app.config["RESEND_API_KEY"]: # Only send if key is set
+        resend.api_key = current_app.config["RESEND_API_KEY"]
+        params: resend.Emails.SendParams = {
+            "from": "imgs.ai <hi@imgs.ai>",
+            "to": [to],
+            "subject": subject,
+            "html": body,
+        }
+        email = resend.Emails.send(params)
 
 
 def set_cuda():

@@ -31,6 +31,7 @@ app.config["REMEMBER_COOKIE_SECURE"] = False # Activate in production
 app.config["DEFAULT_USERNAME"] = "hi@imgs.ai" # Change in production
 app.config["DEFAULT_EMAIL"] = "hi@imgs.ai" # Change in production
 app.config["DEFAULT_PASSWORD"] = "hi@imgs.ai" # Change in production
+app.config["RESEND_API_KEY"] = None # Change in production
 
 # Plugins
 Bootstrap5(app)  # Bootstrap

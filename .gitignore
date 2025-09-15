@@ -1,5 +1,6 @@
 .DS_Store
 users.db
+resend_api_key.txt
 *.xlsx
 .ipynb_checkpoints/
 __pycache__/

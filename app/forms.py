@@ -3,9 +3,6 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAr
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional
 
 
-# TODO: E-mail validation with https://resend.com/
-# TODO: Automatically validate users from list of pre-approved e-mails and/or domains (.edu)
-# https://hackersandslackers.com/flask-login-user-authentication/
 class SignupForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField(

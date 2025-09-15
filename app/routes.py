@@ -5,7 +5,7 @@ from app.forms import SignupForm, LoginForm
 from app import app, log, db, login_manager, models
 from app.user import User, create_user
 from app.session import Session
-from app.util import load_img
+from app.util import load_img, send
 import os
 from markdown import markdown
 
@@ -25,7 +25,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-'''
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     form = SignupForm()
@@ -35,14 +34,14 @@ def signup():
             flash("User name already exists; please choose another one.", "warning")
         else:
             user = create_user(form)
-            flash("Thank you for requesting access, you will hear from us in the next 24 hours.", "info")
+            flash("Thank you for requesting access, you will hear from us in the next few days.", "info")
+            send(to="hi@imgs.ai", body=f'{form.email.data} has registered, <a href="https://imgs.ai/users">approve?</a>')
+            return redirect(url_for("interface"))
     return render_template("signup.html", title="imgs.ai", form=form)
-'''
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    flash("Please note: if you signed up before September 2024 your login data has expired and you will be required to sign up again. Please check back after October 2024 for additional instructions.", "info")
     session = Session(flask_session)
     if current_user.is_authenticated:
         return redirect(url_for("interface"))
@@ -72,6 +71,8 @@ def users():
         if request.method == "POST":
             for i, access in request.form.items():
                 user = User.query.get(int(i))
+                if user.access != bool(int(access)):
+                    send(to=user.email, body='Your access to the advanced features of imgs.ai has been granted. You can now log in at <a href="https://imgs.ai/login">https://imgs.ai/login</a>.')
                 user.access = bool(int(access))
                 db.session.commit()
         return render_template("users.html", title="imgs.ai", users=User.query.all(),)
