@@ -1,3 +1,5 @@
+
+
 # imgs.ai
 
 **imgs.ai** is a fast, dataset-agnostic, deep visual search engine for digital art history based on neural network embeddings. It utilizes modern approximate k-NN algorithms via [Spotify's Annoy library](https://github.com/spotify/annoy) to deliver fast search results even for very large datasets in low-resource environments, and integrates the [OpenAI CLIP model](https://openai.com/blog/clip/) for text-based visual search. 
@@ -17,7 +19,7 @@ Only MacOS and Linux environments are currently supported.
 5. Open a web browser and navigate to `localhost:5000` to see the interface. 
 6. To access private models and use the upload function, a default user with full access is set up, username: `hi@imgs.ai`, password: `hi@imgs.ai`.
 
-**Never run imgs.ai in a production environment unless you have adapted [__init.py__](app/__init__.py) and know what you are doing.**
+**Never run imgs.ai in a production environment unless you have adapted [__init__.py](app/__init__.py) and know what you are doing.**
 
 We provide the Rijksmuseum dataset (embeddings only) for testing purposes. The dataset is trained on nearly 400,000 works in the [Rijksmuseum](https://www.rijksmuseum.nl) collection. This is a live dataset, images are pulled from the Rijksmuseum servers on request. Right-click an image to go to the source website on the Rijksmuseum servers.
 
